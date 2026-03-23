@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0d1117">
 <title>2026 March Madness Spread Pool</title>
@@ -18,151 +17,175 @@
     --r:8px;--r2:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  /* ── Mobile & cross-browser normalization ── */
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#0d1117;}
+  body{-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;}
+  input,button,select,textarea{font-family:inherit;-webkit-appearance:none;appearance:none;border-radius:0;}
+  /* Safe area insets for notched phones */
+  header{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));}
+  #status-bar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));}
+  #page-body{padding-bottom:env(safe-area-inset-bottom);}
+  /* No text selection on chrome UI */
+  header,#status-bar,.tab,.refresh-btn{-webkit-user-select:none;user-select:none;}
   body{background:#0d1117;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;}
 
-header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;-webkit-backdrop-filter:none;}
-.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.logo{font-family:‘Barlow Condensed’,sans-serif;font-size:18px;font-weight:700;color:var(–accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
-.logo span{color:var(–text);font-weight:400;}
-.search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(–muted);pointer-events:none;}
-#search{width:100%;background:var(–bg3);border:1px solid var(–border2);border-radius:20px;color:var(–text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
-#search::placeholder{color:var(–muted);}
-#search:focus{border-color:var(–accent);}
-.tab-bar{display:flex;gap:4px;margin-left:auto;}
-.tab{background:none;border:1px solid transparent;border-radius:6px;color:var(–muted);cursor:pointer;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;-webkit-appearance:none;appearance:none;}
-.tab.active{background:#f78c3f;border-color:#f78c3f;color:#fff;}
-.tab:not(.active):hover{color:var(–text);border-color:rgba(255,255,255,0.14);}
+  header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;-webkit-backdrop-filter:none;}
+  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .logo span{color:var(--text);font-weight:400;}
+  .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;}
+  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  #search{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
+  #search::placeholder{color:var(--muted);}
+  #search:focus{border-color:var(--accent);}
+  .tab-bar{display:flex;gap:4px;margin-left:auto;}
+  .tab{background:none;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;-webkit-appearance:none;appearance:none;}
+  .tab.active{background:#f78c3f;border-color:#f78c3f;color:#fff;}
+  .tab:not(.active):hover{color:var(--text);border-color:rgba(255,255,255,0.14);}
 
-#status-bar{background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
-.sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(–muted);flex-shrink:0;}
-.status-dot.live{background:var(–green);animation:pulse 1.5s infinite;}
-.status-dot.error{background:var(–red);}
-.status-dot.ok{background:var(–blue);}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-#status-text{color:var(–muted);}
-#last-updated{color:var(–muted);margin-left:auto;}
-.refresh-btn{background:none;border:1px solid var(–border2);border-radius:4px;color:var(–muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:color .15s, border-color .15s;font-family:inherit;height:20px;line-height:1;display:inline-flex;align-items:center;overflow:hidden;min-width:66px;position:relative;-webkit-appearance:none;appearance:none;}
-.refresh-btn:hover{color:var(–text);border-color:var(–accent);}
-.refresh-btn.spinning .bball{visibility:hidden;}
-.refresh-btn.spinning .bball-anim{display:block;}
-.bball-anim{display:none;position:absolute;left:0;font-size:13px;line-height:1;animation:dribble-across 2s ease-in-out infinite;}
-@keyframes dribble-across{
-0%  {left:4px;              transform:translateY(0px);}
-10% {left:10%;             transform:translateY(-5px);}
-20% {left:20%;             transform:translateY(2px);}
-30% {left:30%;             transform:translateY(-5px);}
-40% {left:40%;             transform:translateY(2px);}
-50% {left:50%;             transform:translateY(-5px);}
-60% {left:60%;             transform:translateY(2px);}
-70% {left:70%;             transform:translateY(-5px);}
-80% {left:80%;             transform:translateY(2px);}
-90% {left:90%;             transform:translateY(-5px);}
-100%{left:calc(100% - 18px);transform:translateY(2px);}
-}
+  #status-bar{background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
+  .sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+  .status-dot.live{background:var(--green);animation:pulse 1.5s infinite;}
+  .status-dot.error{background:var(--red);}
+  .status-dot.ok{background:var(--blue);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  #status-text{color:var(--muted);}
+  #last-updated{color:var(--muted);margin-left:auto;}
+  .refresh-btn{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:color .15s, border-color .15s;font-family:inherit;height:20px;line-height:1;display:inline-flex;align-items:center;overflow:hidden;min-width:66px;position:relative;-webkit-appearance:none;appearance:none;}
+  .refresh-btn:hover{color:var(--text);border-color:var(--accent);}
+  .refresh-btn.spinning .bball{visibility:hidden;}
+  .refresh-btn.spinning .bball-anim{display:block;}
+  .bball-anim{display:none;position:absolute;left:0;font-size:13px;line-height:1;animation:dribble-across 2s ease-in-out infinite;}
+  @keyframes dribble-across{
+    0%  {left:4px;              transform:translateY(0px);}
+    10% {left:10%;             transform:translateY(-5px);}
+    20% {left:20%;             transform:translateY(2px);}
+    30% {left:30%;             transform:translateY(-5px);}
+    40% {left:40%;             transform:translateY(2px);}
+    50% {left:50%;             transform:translateY(-5px);}
+    60% {left:60%;             transform:translateY(2px);}
+    70% {left:70%;             transform:translateY(-5px);}
+    80% {left:80%;             transform:translateY(2px);}
+    90% {left:90%;             transform:translateY(-5px);}
+    100%{left:calc(100% - 18px);transform:translateY(2px);}
+  }
 
-#search-results{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;padding:80px 16px 16px;overflow-y:auto;}
-#search-results.visible{display:block;}
-.sr-box{background:var(–bg2);border:1px solid var(–border2);border-radius:var(–r2);max-width:560px;margin:0 auto;padding:20px;}
-.sr-close{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-.sr-close h2{font-family:‘Barlow Condensed’,sans-serif;font-size:18px;font-weight:600;}
-.sr-close button{background:none;border:none;color:var(–muted);cursor:pointer;font-size:20px;}
-.player-card{background:var(–bg3);border:1px solid var(–border);border-radius:var(–r);padding:14px 16px;margin-bottom:10px;}
-.player-card.alive{border-left:3px solid var(–green);}
-.player-card.alive-pending{border-left:3px solid var(–yellow);}
-.player-card.eliminated{border-left:3px solid var(–red);opacity:.75;}
-.player-name{font-family:‘Barlow Condensed’,sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
-.player-team{font-size:13px;color:var(–muted);margin-bottom:6px;}
-.status-pill{display:inline-block;border-radius:20px;font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:2px 10px;text-transform:uppercase;}
-.pill-alive{background:rgba(63,185,80,.15);color:var(–green);border:1px solid rgba(63,185,80,.3);}
-.pill-pending{background:rgba(210,153,34,.15);color:var(–yellow);border:1px solid rgba(210,153,34,.3);}
-.pill-out{background:rgba(248,81,73,.12);color:var(–red);border:1px solid rgba(248,81,73,.25);}
+  #search-results{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;padding:80px 16px 16px;overflow-y:auto;}
+  #search-results.visible{display:block;}
+  .sr-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);max-width:560px;margin:0 auto;padding:20px;}
+  .sr-close{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .sr-close h2{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;}
+  .sr-close button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;}
+  .player-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;}
+  .player-card.alive{border-left:3px solid var(--green);}
+  .player-card.alive-pending{border-left:3px solid var(--yellow);}
+  .player-card.eliminated{border-left:3px solid var(--red);opacity:.75;}
+  .player-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+  .player-team{font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .status-pill{display:inline-block;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:2px 10px;text-transform:uppercase;}
+  .pill-alive{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);}
+  .pill-pending{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3);}
+  .pill-out{background:rgba(248,81,73,.12);color:var(--red);border:1px solid rgba(248,81,73,.25);}
 
-#view-bracket,#view-players{display:none;}
-#view-bracket.active,#view-players.active{display:block;}
-.view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
+  #view-bracket,#view-players{display:none;}
+  #view-bracket.active,#view-players.active{display:block;}
+  .view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
 
-.rounds-scroll{overflow-x:auto;padding-bottom:12px;}
-.rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
-.round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
-.round-header{background:var(–bg3);border:1px solid var(–border);border-radius:var(–r) var(–r) 0 0;padding:8px 10px 6px;text-align:center;}
-.round-name{font-family:‘Barlow Condensed’,sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(–accent);}
-.round-dates{font-size:11px;color:var(–muted);margin-top:2px;}
-.matchups-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding:8px 6px;border:1px solid var(–border);border-top:none;background:var(–bg2);}
-.matchup{border:1px solid var(–border);border-radius:var(–r);overflow:hidden;background:var(–bg);font-size:12px;}
-.matchup.live-game{border-color:var(–green);box-shadow:0 0 0 1px rgba(63,185,80,.2);}
-.live-banner{background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.25);display:flex;align-items:center;justify-content:space-between;padding:3px 8px;}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(–green);animation:pulse 1s infinite;flex-shrink:0;}
-.live-label{color:var(–green);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;}
-.live-clock{color:var(–green);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;opacity:.8;}
-.score-box{font-family:‘Barlow Condensed’,sans-serif;font-size:16px;font-weight:700;color:var(–muted);flex-shrink:0;min-width:24px;text-align:right;}
-.score-box.lead{color:var(–text);}
-.matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(–border);color:var(–accent);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;flex-direction:column;}
-.matchup-team{align-items:center;border-bottom:1px solid var(–border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
-.matchup-team:last-child{border-bottom:none;}
-.matchup-team:hover{background:var(–bg3);}
-.matchup-team.winner{background:rgba(63,185,80,.07);}
-.matchup-team.elim{opacity:.5;}
-.seed{background:var(–bg3);border-radius:4px;color:var(–muted);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;min-width:20px;padding:1px 4px;text-align:center;}
-.team-info{flex:1;min-width:0;}
-.team-name{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.team-name.w{color:var(–green);}
-.owner-name{color:var(–muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.owner-name.hl{color:var(–blue);font-weight:500;}
-.score-box{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;color:var(–muted);flex-shrink:0;}
-.score-box.lead{color:var(–text);}
-.win-check{color:var(–green);font-size:11px;flex-shrink:0;}
+  .rounds-scroll{overflow-x:auto;padding-bottom:12px;}
+  .rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
+  .round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
+  .round-header{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;padding:8px 10px 6px;text-align:center;}
+  .round-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);}
+  .round-dates{font-size:11px;color:var(--muted);margin-top:2px;}
+  .matchups-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding:8px 6px;border:1px solid var(--border);border-top:none;background:var(--bg2);}
+  .matchup{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg);font-size:12px;}
+  .matchup.live-game{border-color:var(--green);box-shadow:0 0 0 1px rgba(63,185,80,.2);}
+  .live-banner{background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.25);display:flex;align-items:center;justify-content:space-between;padding:3px 8px;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;flex-shrink:0;}
+  .live-label{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;}
+  .live-clock{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;opacity:.8;}
+  .score-box{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--muted);flex-shrink:0;min-width:24px;text-align:right;}
+  .score-box.lead{color:var(--text);}
+  .matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(--border);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;flex-direction:column;}
+  .matchup-team{align-items:center;border-bottom:1px solid var(--border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
+  .matchup-team:last-child{border-bottom:none;}
+  .matchup-team:hover{background:var(--bg3);}
+  .matchup-team.winner{background:rgba(63,185,80,.07);}
+  .matchup-team.elim{opacity:.5;}
+  .seed{background:var(--bg3);border-radius:4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;min-width:20px;padding:1px 4px;text-align:center;}
+  .team-info{flex:1;min-width:0;}
+  .team-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .team-name.w{color:var(--green);}
+  .owner-name{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .owner-name.hl{color:var(--blue);font-weight:500;}
+  .score-box{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--muted);flex-shrink:0;}
+  .score-box.lead{color:var(--text);}
+  .win-check{color:var(--green);font-size:11px;flex-shrink:0;}
 
-.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-.pcard{background:var(–bg2);border:1px solid var(–border);border-radius:var(–r2);padding:14px 16px;transition:border-color .15s;}
-.pcard:hover{border-color:var(–border2);}
-.pcard.alive{border-left:3px solid var(–green);}
-.pcard.pending{border-left:3px solid var(–yellow);}
-.pcard.out{border-left:3px solid var(–red);opacity:.65;}
-.pcard-head{align-items:center;display:flex;gap:10px;margin-bottom:10px;}
-.avatar{align-items:center;border-radius:50%;display:flex;font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:700;height:38px;justify-content:center;width:38px;flex-shrink:0;}
-.av-alive{background:rgba(63,185,80,.15);color:var(–green);}
-.av-pending{background:rgba(210,153,34,.15);color:var(–yellow);}
-.av-out{background:rgba(248,81,73,.12);color:var(–red);}
-.pcard-name{font-family:‘Barlow Condensed’,sans-serif;font-size:19px;font-weight:700;}
-.pcard-round{font-size:12px;color:var(–muted);margin-bottom:8px;}
-.pcard-team-row{background:var(–bg3);border-radius:6px;display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;margin-bottom:4px;}
-.upcoming-lbl{color:var(–muted);font-size:11px;font-weight:600;letter-spacing:.5px;margin:8px 0 4px;text-transform:uppercase;}
-.next-box{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:6px;font-size:12px;padding:6px 10px;}
+  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border-color .15s;}
+  .pcard:hover{border-color:var(--border2);}
+  .pcard.alive{border-left:3px solid var(--green);}
+  .pcard.pending{border-left:3px solid var(--yellow);}
+  .pcard.out{border-left:3px solid var(--red);opacity:.65;}
+  .pcard-head{align-items:center;display:flex;gap:10px;margin-bottom:10px;}
+  .avatar{align-items:center;border-radius:50%;display:flex;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;height:38px;justify-content:center;width:38px;flex-shrink:0;}
+  .av-alive{background:rgba(63,185,80,.15);color:var(--green);}
+  .av-pending{background:rgba(210,153,34,.15);color:var(--yellow);}
+  .av-out{background:rgba(248,81,73,.12);color:var(--red);}
+  .pcard-name{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;}
+  .pcard-round{font-size:12px;color:var(--muted);margin-bottom:8px;}
+  .pcard-team-row{background:var(--bg3);border-radius:6px;display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;margin-bottom:4px;}
+  .upcoming-lbl{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.5px;margin:8px 0 4px;text-transform:uppercase;}
+  .next-box{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:6px;font-size:12px;padding:6px 10px;}
 
-.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;color:var(–muted);}
-.legend-item{display:flex;align-items:center;gap:5px;}
-.legend-dot{width:8px;height:8px;border-radius:50%;}
-.rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(–r);color:var(–muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
-.rules-note strong{color:var(–accent);}
-.region-lbl{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted);padding:10px 0 4px;}
-.empty-msg{color:var(–muted);font-size:14px;text-align:center;padding:40px;}
-.warn-banner{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:var(–r);color:var(–yellow);font-size:12px;margin-bottom:16px;padding:10px 14px;}
-.matchup.highlight-pulse{animation:matchup-pulse 0.6s ease-in-out 4;}
-@keyframes matchup-pulse{
-0%,100%{border-color:var(–border);box-shadow:none;}
-50%{border-color:var(–accent);box-shadow:0 0 0 3px rgba(247,140,63,.35);}
-}
-.pending-badge{background:rgba(210,153,34,.15);color:var(–yellow);border-radius:3px;font-size:9px;font-weight:700;padding:1px 5px;letter-spacing:.5px;border:1px solid rgba(210,153,34,.3);}
-.tbd-slot{opacity:.4;}
-.tbd-slot .matchup-spread{background:transparent;}
+  .rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(--r);color:var(--muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
+  .rules-note strong{color:var(--accent);}
+  .region-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:10px 0 4px;}
+  .empty-msg{color:var(--muted);font-size:14px;text-align:center;padding:40px;}
+  .warn-banner{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:var(--r);color:var(--yellow);font-size:12px;margin-bottom:16px;padding:10px 14px;}
+  .matchup.highlight-pulse{animation:matchup-pulse 0.6s ease-in-out 4;}
+  @keyframes matchup-pulse{
+    0%,100%{border-color:var(--border);box-shadow:none;}
+    50%{border-color:var(--accent);box-shadow:0 0 0 3px rgba(247,140,63,.35);}
+  }
+  .pending-badge{background:rgba(210,153,34,.15);color:var(--yellow);border-radius:3px;font-size:9px;font-weight:700;padding:1px 5px;letter-spacing:.5px;border:1px solid rgba(210,153,34,.3);}
+  .tbd-slot{opacity:.4;}
+  .tbd-slot .matchup-spread{background:transparent;}
 
-@media(max-width:600px){
-.tab{font-size:11px;padding:4px 8px;}
-.logo{font-size:17px;}
-.search-wrap{max-width:100%;width:100%;}
-.players-grid{grid-template-columns:1fr;}
-}
+  @media(max-width:600px){
+    .tab{font-size:11px;padding:4px 8px;}
+    .logo{font-size:17px;}
+    .search-wrap{max-width:100%;width:100%;}
+    .players-grid{grid-template-columns:1fr;}
+  }
 
-#loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
-#loading-screen.hidden{opacity:0;pointer-events:none;}
-.loading-ball{font-size:48px;animation:spin-ball 0.8s linear infinite;display:inline-block;}
-@keyframes spin-ball{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-.loading-title{font-family:‘Barlow Condensed’,sans-serif;font-size:22px;font-weight:700;color:var(–accent);margin-top:16px;}
-.loading-sub{font-size:13px;color:var(–muted);margin-top:6px;}
+  #loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
+  #loading-screen.hidden{opacity:0;pointer-events:none;}
+  .loading-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#f78c3f;margin-top:20px;}
+  .loading-sub{font-size:13px;color:#8b949e;margin-top:6px;}
+  .hoop-scene{position:relative;width:180px;height:140px;}
+  /* Ball arcs from bottom-left to hoop */
+  .shoot-ball{position:absolute;font-size:28px;animation:shoot 1.2s cubic-bezier(.4,0,.6,1) infinite;transform-origin:center;}
+  @keyframes shoot{
+    0%  {left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
+    40% {left:70px; top:10px;  opacity:1; transform:rotate(180deg) scale(0.9);}
+    65% {left:108px;top:32px;  opacity:1; transform:rotate(300deg) scale(0.8);}
+    75% {left:108px;top:42px;  opacity:0; transform:rotate(360deg) scale(0.7);}
+    76% {left:10px; top:110px; opacity:0; transform:rotate(0deg)   scale(1.1);}
+    85% {left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
+    100%{left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
+  }
+  /* Ripple inside net after ball goes in */
+  .net-ripple{animation:ripple 1.2s ease-in-out infinite;}
+  @keyframes ripple{
+    0%,60%{opacity:0;transform:scaleX(1);}
+    70%    {opacity:1;transform:scaleX(1.15);}
+    85%    {opacity:1;transform:scaleX(0.9);}
+    100%   {opacity:0;transform:scaleX(1);}
+  }
 </style>
-
 </head>
 <body>
 
@@ -196,7 +219,48 @@ header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding
   </div>
 </div>
 
-<div id="loading-screen"><div class="loading-ball">🏀</div><div class="loading-title">2026 March Madness Spread Pool</div><div class="loading-sub">Loading bracket…</div></div>
+<div id="loading-screen">
+  <div class="hoop-scene">
+    <!-- Backboard + hoop SVG -->
+    <svg width="180" height="140" viewBox="0 0 180 140" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0">
+      <!-- Backboard -->
+      <rect x="95" y="8" width="52" height="34" rx="3" fill="#1c2230" stroke="#444c5e" stroke-width="2"/>
+      <!-- Inner square on backboard -->
+      <rect x="108" y="16" width="26" height="18" rx="1" fill="none" stroke="#f78c3f" stroke-width="1.5" opacity="0.6"/>
+      <!-- Hoop pole -->
+      <line x1="148" y1="8" x2="148" y2="140" stroke="#444c5e" stroke-width="3"/>
+      <!-- Hoop rim -->
+      <ellipse cx="121" cy="48" rx="20" ry="5" fill="none" stroke="#f78c3f" stroke-width="3"/>
+      <!-- Net lines -->
+      <g class="net-ripple" style="transform-origin:121px 48px">
+        <line x1="101" y1="48" x2="107" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="108" y1="48" x2="111" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="115" y1="48" x2="115" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="122" y1="48" x2="119" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="129" y1="48" x2="123" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="136" y1="48" x2="127" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <line x1="141" y1="48" x2="131" y2="78" stroke="#8b949e" stroke-width="1.2" opacity="0.7"/>
+        <!-- horizontal net bands -->
+        <path d="M103 58 Q121 62 139 58" stroke="#8b949e" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M105 68 Q121 73 137 68" stroke="#8b949e" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M107 78 Q121 80 133 78" stroke="#8b949e" stroke-width="1" fill="none" opacity="0.4"/>
+      </g>
+      <!-- Floor line -->
+      <line x1="0" y1="132" x2="180" y2="132" stroke="#2d3748" stroke-width="2"/>
+      <!-- Player silhouette (simple stick figure shooting) -->
+      <circle cx="22" cy="88" r="7" fill="#3a4460"/>
+      <line x1="22" y1="95" x2="22" y2="118" stroke="#3a4460" stroke-width="3" stroke-linecap="round"/>
+      <line x1="22" y1="118" x2="12" y2="132" stroke="#3a4460" stroke-width="3" stroke-linecap="round"/>
+      <line x1="22" y1="118" x2="32" y2="132" stroke="#3a4460" stroke-width="3" stroke-linecap="round"/>
+      <!-- Shooting arm raised -->
+      <line x1="22" y1="100" x2="38" y2="88" stroke="#3a4460" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <!-- Animated basketball -->
+    <div class="shoot-ball">🏀</div>
+  </div>
+  <div class="loading-title">2026 March Madness Spread Pool</div>
+  <div class="loading-sub">Loading bracket…</div>
+</div>
 <div id="page-body">
 <div id="search-results">
   <div class="sr-box">
@@ -210,11 +274,7 @@ header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding
 
 <div id="view-bracket" class="active">
   <div class="view-wrap">
-    <div class="legend">
-      <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Advanced</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>In progress / upcoming</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Eliminated</span>
-    </div>
+
     <div id="bracket-container"><div class="empty-msg">Loading…</div></div>
   </div>
 </div>
@@ -488,6 +548,7 @@ function buildFromKnown() {
     const useOwners = r.round === 0;
     return {
       id: `known_${i}`,
+      bracketPos: i,  // canonical bracket order for pairing later rounds
       round: r.round,
       region: r.region,
       topSeed: topO?.seed ?? null,
@@ -613,20 +674,10 @@ function buildFromKnown() {
   function makeMatchup(region, round, mA, mB, idx) {
     const adA = advancingTeam(mA);
     const adB = advancingTeam(mB);
-    const hasTeams = adA || adB;
-    if (!hasTeams) {
-      // Both undecided — pure TBD slot
-      return {
-        id: `tbd_${region}_${round}_${idx}_${placeholderIdx++}`,
-        round, region,
-        topSeed:null, topTeam:'TBD', topOwner:null, topScore:null,
-        botSeed:null, botTeam:'TBD', botOwner:null, botScore:null,
-        spread:null, rawWinner:null, isLive:false, isFinal:false, isPending:false,
-        isTBD:true, clock:'', period:0, fromKnown:true,
-      };
-    }
+
     const top = adA || { team:'TBD', owner:null, seed:null };
     const bot = adB || { team:'TBD', owner:null, seed:null };
+
     return {
       id: `derived_${region}_${round}_${idx}_${placeholderIdx++}`,
       round, region,
@@ -646,7 +697,11 @@ function buildFromKnown() {
     for (let round = 1; round <= 3; round++) {
       const prevRound = known
         .filter(m => m.region === region && m.round === round - 1)
-        .sort((a,b) => (parseInt(a.id.replace(/\D/g,''))||0) - (parseInt(b.id.replace(/\D/g,''))||0));
+        .sort((a,b) => {
+          const aPos = a.bracketPos ?? (parseInt((a.id.match(/known_(\d+)/)||[0,999])[1]));
+          const bPos = b.bracketPos ?? (parseInt((b.id.match(/known_(\d+)/)||[0,999])[1]));
+          return aPos - bPos;
+        });
       const thisRound = known.filter(m => m.region === region && m.round === round && !m.isTBD && !m.isDerived);
       if (!thisRound.length) break;
 
@@ -656,6 +711,7 @@ function buildFromKnown() {
         const adv = advancingTeam(m);
         if (adv) ownerByTeam[adv.team] = adv.owner;
       }
+      if (region === 'East' && round === 1)
 
       // Apply to this round's known entries
       for (const m of thisRound) {
@@ -669,49 +725,104 @@ function buildFromKnown() {
     }
   }
 
-  for (const region of ['East','South','West','Midwest']) {
-    // Rounds 1 (R2=4 games), 2 (S16=2 games), 3 (E8=1 game)
-    for (let round = 1; round <= 3; round++) {
-      const existingInRound = known.filter(m => m.region === region && m.round === round && !m.isTBD && !m.isDerived);
-      if (existingInRound.length > 0) continue; // already have real data for this round/region
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
+  known.sort((a,b) => (a.round - b.round) || (ro[a.region] - ro[b.region]));
+  return known;
+}
 
-      // Get previous round's matchups in order
-      const prevRound = known
-        .filter(m => m.region === region && m.round === round - 1 && !m.isTBD)
-        .sort((a, b) => {
-          // Sort by position in the bracket — use id index as proxy
-          const ai = parseInt(a.id.replace(/\D/g,'')) || 0;
-          const bi = parseInt(b.id.replace(/\D/g,'')) || 0;
-          return ai - bi;
+// ─── DERIVE LATER-ROUND SLOTS ─────────────────────────────────────────────────
+// Run AFTER merge so live/final results are baked in before deriving next rounds.
+// This ensures spread-pool owners are carried forward correctly.
+function deriveSlots(matchups) {
+  let placeholderIdx = 5000;
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
+
+  function advancingTeam(m) {
+    if (!m || !m.isFinal || m.rawWinner === null) return null;
+    const scoreWinner = m.rawWinner;
+    let spreadWinner;
+    const margin = (m.topScore??0) - (m.botScore??0);
+    if (m.spread === null) spreadWinner = scoreWinner;
+    else if (m.spread > 0) spreadWinner = margin > m.spread ? 'top' : 'bot';
+    else spreadWinner = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+    return {
+      team:  scoreWinner==='top' ? m.topTeam  : m.botTeam,
+      owner: spreadWinner==='top' ? m.topOwner : m.botOwner,
+      seed:  scoreWinner==='top' ? m.topSeed  : m.botSeed,
+    };
+  }
+
+  function makeSlot(region, round, mA, mB, idx) {
+    const adA = mA ? advancingTeam(mA) : null;
+    const adB = mB ? advancingTeam(mB) : null;
+    const top = adA || { team:'TBD', owner:null, seed:null };
+    const bot = adB || { team:'TBD', owner:null, seed:null };
+    return {
+      id: `derived_${region}_${round}_${idx}_${placeholderIdx++}`,
+      round, region,
+      topSeed: top.seed, topTeam: top.team, topOwner: top.owner, topScore: null,
+      botSeed: bot.seed, botTeam: bot.team, botOwner: bot.owner, botScore: null,
+      spread: null, rawWinner: null, isLive: false, isFinal: false, isPending: false,
+      isTBD: top.team === 'TBD' && bot.team === 'TBD',
+      isDerived: true, clock: '', period: 0,
+    };
+  }
+
+  for (const region of ['East','South','West','Midwest']) {
+    for (let round = 1; round <= 3; round++) {
+      const existing = matchups.filter(m => m.region===region && m.round===round && !m.isDerived);
+      const prev = matchups
+        .filter(m => m.region===region && m.round===round-1 && !m.isDerived)
+        .sort((a,b) => {
+          // Use explicit bracketPos if available, otherwise fall back to known_ index
+          const aPos = a.bracketPos ?? (parseInt((a.id.match(/known_(\d+)/)||[0,999])[1]));
+          const bPos = b.bracketPos ?? (parseInt((b.id.match(/known_(\d+)/)||[0,999])[1]));
+          return aPos - bPos;
         });
 
-      const expectedCount = [4, 2, 1][round - 1];
-      // Pair consecutive previous-round games
-      for (let i = 0; i < expectedCount; i++) {
-        const mA = prevRound[i * 2];
-        const mB = prevRound[i * 2 + 1];
-        known.push(makeMatchup(region, round, mA, mB, i));
+      // Build owner map from previous round results
+      const ownerByTeam = {};
+      for (const m of prev) {
+        const adv = advancingTeam(m);
+        if (adv && adv.team !== 'TBD') ownerByTeam[adv.team] = adv.owner;
+      }
+
+      if (existing.length > 0) {
+        // Update owners on existing entries from spread-pool logic
+        for (const m of existing) {
+          if (m.topTeam !== 'TBD' && ownerByTeam[m.topTeam] !== undefined) m.topOwner = ownerByTeam[m.topTeam];
+          if (m.botTeam !== 'TBD' && ownerByTeam[m.botTeam] !== undefined) m.botOwner = ownerByTeam[m.botTeam];
+        }
+      } else {
+        // No real data — derive slots from previous round
+        const count = [4,2,1][round-1];
+        for (let i = 0; i < count; i++) {
+          matchups.push(makeSlot(region, round, prev[i*2], prev[i*2+1], i));
+        }
       }
     }
   }
 
-  // Final Four — pair E8 winners: East vs West, South vs Midwest (standard bracket sides)
-  const e8Winners = {
-    East:    known.filter(m => m.region === 'East'    && m.round === 3)[0],
-    South:   known.filter(m => m.region === 'South'   && m.round === 3)[0],
-    West:    known.filter(m => m.region === 'West'    && m.round === 3)[0],
-    Midwest: known.filter(m => m.region === 'Midwest' && m.round === 3)[0],
+  // Final Four
+  const e8 = {
+    East:    matchups.find(m => m.region==='East'    && m.round===3 && !m.isDerived),
+    South:   matchups.find(m => m.region==='South'   && m.round===3 && !m.isDerived),
+    West:    matchups.find(m => m.region==='West'    && m.round===3 && !m.isDerived),
+    Midwest: matchups.find(m => m.region==='Midwest' && m.round===3 && !m.isDerived),
   };
-  known.push(makeMatchup('FinalFour', 4, e8Winners.East,  e8Winners.West,    0));
-  known.push(makeMatchup('FinalFour', 4, e8Winners.South, e8Winners.Midwest, 1));
+  // Use derived E8 slots if no real ones yet
+  for (const r of ['East','South','West','Midwest']) {
+    if (!e8[r]) e8[r] = matchups.find(m => m.region===r && m.round===3);
+  }
+  matchups.push(makeSlot('FinalFour',    4, e8.East,  e8.West,    0));
+  matchups.push(makeSlot('FinalFour',    4, e8.South, e8.Midwest, 1));
 
   // Championship
-  const ff = known.filter(m => m.round === 4);
-  known.push(makeMatchup('Championship', 5, ff[0], ff[1], 0));
+  const ff = matchups.filter(m => m.round===4);
+  matchups.push(makeSlot('Championship', 5, ff[0], ff[1], 0));
 
-  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
-  known.sort((a,b) => (a.round - b.round) || (ro[a.region] - ro[b.region]));
-  return known;
+  matchups.sort((a,b) => (a.round-b.round) || (ro[a.region]-ro[b.region]));
+  return matchups;
 }
 
 // ─── ESPN API ──────────────────────────────────────────────────────
@@ -735,7 +846,6 @@ async function fetchDate(date) {
       const r = await fetch(makeUrl(targetUrl), {cache:'no-store'});
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
-      console.log(`[ESPN] ${date}: ${data.events?.length ?? 0} events via ${i===0?'direct':'proxy '+i}`);
       return data;
     } catch(e) {
       console.warn(`[ESPN] ${date} failed via ${i===0?'direct':'proxy '+i}:`, e.message);
@@ -859,10 +969,6 @@ function _parseEvent(ev) {
   const round = roundFromNotes(notes, dateStr);
   const region = regionFromNotes(notes, topO, botO);
 
-  console.log(`[parseEvent] ${topName} vs ${botName} | date=${dateStr} round=${round} region=${region} status=${statusName} notes="${notes.map(n=>n.text||'').join(',')}"`);
-
-  if (round === null || !region) return null;
-
   return {
     id: ev.id,
     round, region,
@@ -924,29 +1030,57 @@ function mergeMatchups(known, live) {
     if (!liveMatch) return k;
     return {
       ...liveMatch,
-      // Always preserve our known team ordering for display consistency
+      // Always preserve our known team ordering and derived owners
       topTeam: k.topTeam, topOwner: k.topOwner, topSeed: k.topSeed,
       botTeam: k.botTeam, botOwner: k.botOwner, botSeed: k.botSeed,
       // Swap scores if ESPN returned teams in opposite order
       topScore: liveMatch.topTeam === k.topTeam ? liveMatch.topScore : liveMatch.botScore,
       botScore: liveMatch.topTeam === k.topTeam ? liveMatch.botScore : liveMatch.topScore,
-      rawWinner: liveMatch.rawWinner === null ? null
-        : liveMatch.topTeam === k.topTeam ? liveMatch.rawWinner
-        : liveMatch.rawWinner === 'top' ? 'bot' : 'top',
-      // Freeze spread at known value — never overwrite once game starts
+      // Use live game/winner state — don't let pending known entry null these out
+      isFinal: liveMatch.isFinal,
+      isLive:  liveMatch.isLive,
+      rawWinner: (() => {
+        if (liveMatch.rawWinner === null) return null;
+        // Flip if ESPN had teams in opposite order
+        if (liveMatch.topTeam === k.topTeam) return liveMatch.rawWinner;
+        return liveMatch.rawWinner === 'top' ? 'bot' : 'top';
+      })(),
+      // Freeze spread at known value
       spread: k.spread !== null ? k.spread : liveMatch.spread,
       gameDate: liveMatch.gameDate || k.gameDate,
     };
   });
 
   // Add any live matchups not in known (future rounds picked up from API)
+  // Override owners with spread-pool owners derived from previous round results
   const knownKeys = new Set(known.flatMap(k => [
     [k.topTeam, k.botTeam, k.round].join('|'),
     [k.botTeam, k.topTeam, k.round].join('|'),
   ]));
+
+  // Build a lookup of team → spread-pool owner from all final games
+  function spreadPoolOwner(team) {
+    // Walk backwards through rounds to find who currently "owns" this team
+    // after all spread-pool reassignments
+    const finals = merged.filter(m => m.isFinal).sort((a,b) => b.round - a.round);
+    for (const m of finals) {
+      if (m.topTeam === team) return m.topOwner;
+      if (m.botTeam === team) return m.botOwner;
+    }
+    return ownerInfo(team)?.owner ?? null;
+  }
+
   for (const m of live) {
-    const key = [m.topTeam, m.botTeam, m.round].join('|');
-    if (!knownKeys.has(key)) merged.push(m);
+    const key  = [m.topTeam, m.botTeam, m.round].join('|');
+    const keyR = [m.botTeam, m.topTeam, m.round].join('|');
+    if (!knownKeys.has(key) && !knownKeys.has(keyR)) {
+      // Replace raw OWNER_MAP owners with spread-pool owners
+      merged.push({
+        ...m,
+        topOwner: spreadPoolOwner(m.topTeam),
+        botOwner: spreadPoolOwner(m.botTeam),
+      });
+    }
   }
 
   const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
@@ -974,7 +1108,7 @@ function spreadLabel(m) {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
-let MATCHUPS = buildFromKnown(); // start with known data immediately
+let MATCHUPS = deriveSlots(buildFromKnown()); // start with known data immediately
 let usingLive = false;
 let currentView = 'bracket';
 let refreshTimer = null;
@@ -1473,11 +1607,11 @@ async function fetchAndRender(manual=false) {
   if (manual) setStatus('','Refreshing…');
   try {
     const liveData = await loadLiveMatchups();
-    console.log('[DEBUG] Live matchups from ESPN:', liveData.length, liveData.map(m=>`${m.topTeam} vs ${m.botTeam} R${m.round} live=${m.isLive} final=${m.isFinal} top=${m.topScore} bot=${m.botScore}`));
     const known = buildFromKnown();
-    MATCHUPS = mergeMatchups(known, liveData);
+    MATCHUPS = deriveSlots(mergeMatchups(known, liveData));
     const liveGames = MATCHUPS.filter(m=>m.isLive);
-    console.log('[DEBUG] Live games after merge:', liveGames.map(m=>`${m.topTeam} vs ${m.botTeam} ${m.topScore}-${m.botScore}`));
+    if (uconn)
+
     usingLive = true;
     const liveCount = liveGames.length;
     setStatus(liveCount?'live':'ok',
@@ -1486,7 +1620,7 @@ async function fetchAndRender(manual=false) {
     setUpdated();
   } catch(e) {
     console.warn('ESPN API unavailable:', e.message);
-    setStatus('error','ESPN API unavailable — showing cached results');
+    setStatus('ok','Showing latest known results — refresh to retry');
     setUpdated();
   }
   const scrollY = window.scrollY; // save position before re-render
@@ -1573,7 +1707,6 @@ hideLoadingScreen();
 // 2. Then fetch live data in background and merge
 fetchAndRender();
 </script>
-
 </div>
 </body>
 </html>

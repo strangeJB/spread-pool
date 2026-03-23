@@ -444,23 +444,26 @@ function buildFromKnown() {
   const known = KNOWN_RESULTS.map((r, i) => {
     const topO = OWNER_MAP[r.top], botO = OWNER_MAP[r.bot];
     const hasScore = r.topScore !== null && r.botScore !== null;
+    // Only assign original owners for Round 0 — later rounds derive owners
+    // by following who covered the spread forward (may differ from team owner).
+    const useOwners = r.round === 0;
     return {
       id: `known_${i}`,
       round: r.round,
       region: r.region,
       topSeed: topO?.seed ?? null,
       topTeam: r.top,
-      topOwner: topO?.owner ?? null,
+      topOwner: useOwners ? (topO?.owner ?? null) : null,
       topScore: r.topScore,
       botSeed: botO?.seed ?? null,
       botTeam: r.bot,
-      botOwner: botO?.owner ?? null,
+      botOwner: useOwners ? (botO?.owner ?? null) : null,
       botScore: r.botScore,
       spread: r.spread,
       rawWinner: hasScore ? (r.topScore > r.botScore ? 'top' : 'bot') : null,
       isLive: false,
-      isFinal: hasScore,   // only mark final if we actually have a score
-      isPending: !hasScore, // pending = we know the matchup but not the result
+      isFinal: hasScore,
+      isPending: !hasScore,
       clock: '',
       period: 0,
       gameDate: r.gameDate || null,
@@ -538,22 +541,34 @@ function buildFromKnown() {
   // R2 slots 0–3 → S16 pairs: (0,1),(2,3)
   // S16 slots 0–1 → E8 pair:  (0,1)
 
-  // Helper: get the spread-adjusted winner's team info from a completed matchup
+  // Helper: returns who advances to the next round from a completed matchup.
+  // The TEAM that advances is always the score winner (they're the one playing next).
+  // The OWNER that advances is whoever covered the spread — which may be the losing team's owner.
+  // e.g. UConn beats Furman but Furman covers → Ron (Furman owner) advances riding UConn.
   function advancingTeam(m) {
     if (!m || m.isTBD) return null;
     if (!m.isFinal || m.rawWinner === null) return null;
-    // Inline spread logic (spreadOwnerWinner defined later, so duplicate here)
-    let winner;
+
+    // Score winner = the team that actually won and plays next
+    const scoreWinner = m.rawWinner; // 'top' or 'bot'
+
+    // Spread winner = the owner who advances (covered the spread or won outright)
+    let spreadWinner;
     if (m.spread === null) {
-      winner = m.rawWinner;
+      spreadWinner = scoreWinner;
     } else {
       const margin = (m.topScore??0) - (m.botScore??0);
-      if (m.spread > 0) winner = margin > m.spread ? 'top' : 'bot';
-      else winner = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+      if (m.spread > 0) spreadWinner = margin > m.spread ? 'top' : 'bot';
+      else spreadWinner = -margin > Math.abs(m.spread) ? 'bot' : 'top';
     }
-    if (winner === 'top') return { team: m.topTeam, owner: m.topOwner, seed: m.topSeed };
-    if (winner === 'bot') return { team: m.botTeam, owner: m.botOwner, seed: m.botSeed };
-    return null;
+
+    // The advancing team is always the score winner
+    const advTeam = scoreWinner === 'top' ? m.topTeam : m.botTeam;
+    const advSeed = scoreWinner === 'top' ? m.topSeed : m.botSeed;
+    // But the owner is whoever covered the spread
+    const advOwner = spreadWinner === 'top' ? m.topOwner : m.botOwner;
+
+    return { team: advTeam, owner: advOwner, seed: advSeed };
   }
 
   function makeMatchup(region, round, mA, mB, idx) {
@@ -582,6 +597,37 @@ function buildFromKnown() {
       isTBD: top.team === 'TBD' && bot.team === 'TBD',
       isDerived: true, clock: '', period: 0, fromKnown: true,
     };
+  }
+
+  // ── BACKFILL OWNERS ON KNOWN R1+ ENTRIES ──
+  // KNOWN_RESULTS entries for rounds 1+ have null owners (stripped above).
+  // Walk forward round by round within each region, find the advancingTeam
+  // from the previous round, and assign their owner to the matching team.
+  for (const region of ['East','South','West','Midwest']) {
+    for (let round = 1; round <= 3; round++) {
+      const prevRound = known
+        .filter(m => m.region === region && m.round === round - 1)
+        .sort((a,b) => (parseInt(a.id.replace(/\D/g,''))||0) - (parseInt(b.id.replace(/\D/g,''))||0));
+      const thisRound = known.filter(m => m.region === region && m.round === round && !m.isTBD && !m.isDerived);
+      if (!thisRound.length) break;
+
+      // Build a map of team → advancing owner from previous round
+      const ownerByTeam = {};
+      for (const m of prevRound) {
+        const adv = advancingTeam(m);
+        if (adv) ownerByTeam[adv.team] = adv.owner;
+      }
+
+      // Apply to this round's known entries
+      for (const m of thisRound) {
+        if (m.topTeam !== 'TBD' && ownerByTeam[m.topTeam] !== undefined) {
+          m.topOwner = ownerByTeam[m.topTeam];
+        }
+        if (m.botTeam !== 'TBD' && ownerByTeam[m.botTeam] !== undefined) {
+          m.botOwner = ownerByTeam[m.botTeam];
+        }
+      }
+    }
   }
 
   for (const region of ['East','South','West','Midwest']) {

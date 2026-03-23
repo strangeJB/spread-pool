@@ -4,6 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d1117">
 <title>2026 March Madness Spread Pool</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -16,9 +18,9 @@
     --r:8px;--r2:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;}
+  body{background:#0d1117;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;}
 
-header{background:var(–bg2);border-bottom:1px solid var(–border);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;}
+header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;-webkit-backdrop-filter:none;}
 .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .logo{font-family:‘Barlow Condensed’,sans-serif;font-size:18px;font-weight:700;color:var(–accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .logo span{color:var(–text);font-weight:400;}
@@ -32,7 +34,7 @@ header{background:var(–bg2);border-bottom:1px solid var(–border);padding:14p
 .tab.active{background:var(–accent);border-color:var(–accent);color:#fff;}
 .tab:not(.active):hover{color:var(–text);border-color:var(–border2);}
 
-#status-bar{background:var(–bg3);border-bottom:1px solid var(–border);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
+#status-bar{background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
 .sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(–muted);flex-shrink:0;}
 .status-dot.live{background:var(–green);animation:pulse 1.5s infinite;}
@@ -153,7 +155,7 @@ header{background:var(–bg2);border-bottom:1px solid var(–border);padding:14p
 .players-grid{grid-template-columns:1fr;}
 }
 
-#loading-screen{position:fixed;inset:0;background:var(–bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
+#loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
 #loading-screen.hidden{opacity:0;pointer-events:none;}
 .loading-ball{font-size:48px;animation:spin-ball 0.8s linear infinite;display:inline-block;}
 @keyframes spin-ball{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
@@ -169,7 +171,7 @@ header{background:var(–bg2);border-bottom:1px solid var(–border);padding:14p
     <div class="logo">🏀 2026 March Madness Spread Pool</div>
     <div style="position:relative;flex-shrink:0">
       <button class="tab" onclick="toggleRules()" id="rules-btn" style="font-size:16px;padding:3px 10px;letter-spacing:0" title="Rules">···</button>
-      <div id="rules-dropdown" style="display:none;position:absolute;right:0;top:0;width:290px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+      <div id="rules-dropdown" style="display:none;position:absolute;right:0;top:0;width:290px;background:#161b22;border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:12px 14px;font-size:12px;color:#8b949e;line-height:1.6;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.6)">
         <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:13px;margin-bottom:6px">How it works</div>
         If the underdog loses by <em>less</em> than the spread (or wins outright), the underdog's owner advances — riding the winning team going forward. All ties go to the underdog.
       </div>

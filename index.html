@@ -144,7 +144,6 @@
   .rules-note strong{color:var(--accent);}
   .region-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:10px 0 4px;}
   .empty-msg{color:var(--muted);font-size:14px;text-align:center;padding:40px;}
-  .warn-banner{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:var(--r);color:var(--yellow);font-size:12px;margin-bottom:16px;padding:10px 14px;}
   .matchup.highlight-pulse{animation:matchup-pulse 0.6s ease-in-out 4;}
   @keyframes matchup-pulse{
     0%,100%{border-color:var(--border);box-shadow:none;}
@@ -1033,6 +1032,9 @@ function mergeMatchups(known, live) {
       // Always preserve our known team ordering and derived owners
       topTeam: k.topTeam, topOwner: k.topOwner, topSeed: k.topSeed,
       botTeam: k.botTeam, botOwner: k.botOwner, botSeed: k.botSeed,
+      // Preserve bracket position for correct pairing in later rounds
+      bracketPos: k.bracketPos,
+      id: k.id, // keep known ID so bracketPos-based sort works
       // Swap scores if ESPN returned teams in opposite order
       topScore: liveMatch.topTeam === k.topTeam ? liveMatch.topScore : liveMatch.botScore,
       botScore: liveMatch.topTeam === k.topTeam ? liveMatch.botScore : liveMatch.topScore,
@@ -1052,35 +1054,35 @@ function mergeMatchups(known, live) {
   });
 
   // Add any live matchups not in known (future rounds picked up from API)
-  // Override owners with spread-pool owners derived from previous round results
+  // Only add ESPN games for rounds where we have NO known entries for that region —
+  // rounds we derive ourselves (Sweet 16+) must not be polluted with raw ESPN data
   const knownKeys = new Set(known.flatMap(k => [
     [k.topTeam, k.botTeam, k.round].join('|'),
     [k.botTeam, k.topTeam, k.round].join('|'),
   ]));
 
-  // Build a lookup of team → spread-pool owner from all final games
-  function spreadPoolOwner(team) {
-    // Walk backwards through rounds to find who currently "owns" this team
-    // after all spread-pool reassignments
-    const finals = merged.filter(m => m.isFinal).sort((a,b) => b.round - a.round);
-    for (const m of finals) {
-      if (m.topTeam === team) return m.topOwner;
-      if (m.botTeam === team) return m.botOwner;
-    }
-    return ownerInfo(team)?.owner ?? null;
-  }
+  // Track which region+round combos already have known data
+  // For any region+round with known entries, block ALL ESPN games for that combo
+  const coveredRegionRound = new Set(known.map(k => `${k.region}|${k.round}`));
+  // Also block entire rounds that deriveSlots will handle (rounds 2+)
+  // unless ESPN has a game we explicitly know about (i.e. it's in knownKeys)
+  const knownRounds = new Set(known.map(k => k.round));
+  const maxKnownRound = knownRounds.size ? Math.max(...knownRounds) : 0;
 
   for (const m of live) {
     const key  = [m.topTeam, m.botTeam, m.round].join('|');
     const keyR = [m.botTeam, m.topTeam, m.round].join('|');
-    if (!knownKeys.has(key) && !knownKeys.has(keyR)) {
-      // Replace raw OWNER_MAP owners with spread-pool owners
-      merged.push({
-        ...m,
-        topOwner: spreadPoolOwner(m.topTeam),
-        botOwner: spreadPoolOwner(m.botTeam),
-      });
-    }
+    const regionRound = `${m.region}|${m.round}`;
+    // Skip if: already in known, OR this is a future round we derive ourselves
+    if (knownKeys.has(key) || knownKeys.has(keyR)) continue;
+    if (m.round > maxKnownRound) continue; // deriveSlots handles these
+    if (coveredRegionRound.has(regionRound)) continue; // region+round has known data
+    // Replace raw OWNER_MAP owners with spread-pool owners
+    merged.push({
+      ...m,
+      topOwner: spreadPoolOwner(m.topTeam),
+      botOwner: spreadPoolOwner(m.botTeam),
+    });
   }
 
   const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
@@ -1226,7 +1228,6 @@ function renderBracket(hl) {
   const c=document.getElementById('bracket-container');
   let html='';
   if (!usingLive) {
-    html+=`<div class="warn-banner">⚡ Showing known results through Round 2. Live data loading in background…</div>`;
   }
 
   const regions=['East','South','West','Midwest'];
@@ -1263,15 +1264,45 @@ function getInitials(n){return n.split(' ').map(x=>x[0]).join('').slice(0,2).toU
 
 // Returns status for ONE team entry belonging to an owner.
 // Each owner has up to 2 teams; we call this once per team.
+// Build a map of owner → all (team, round) pairs they appear in across MATCHUPS
+// This correctly reflects spread-pool reassignments
+function buildOwnerTeamMap() {
+  const map = {}; // owner → Set of teams currently riding
+  for (const m of MATCHUPS) {
+    if (m.isTBD) continue;
+    if (m.topOwner && m.topTeam !== 'TBD') {
+      if (!map[m.topOwner]) map[m.topOwner] = new Set();
+      map[m.topOwner].add(m.topTeam);
+    }
+    if (m.botOwner && m.botTeam !== 'TBD') {
+      if (!map[m.botOwner]) map[m.botOwner] = new Set();
+      map[m.botOwner].add(m.botTeam);
+    }
+  }
+  return map;
+}
+
+// Get all teams an owner is currently riding (may differ from original OWNER_MAP)
+function teamsForOwner(owner) {
+  const map = buildOwnerTeamMap();
+  return map[owner] ? [...map[owner]] : [];
+}
+
 function teamEntryStatus(owner, team) {
-  // Find all matchups this specific team has played
+  // Find all matchups where this owner rides this specific team
   const mine = MATCHUPS.filter(m =>
-    (m.topTeam === team && m.topOwner === owner) ||
-    (m.botTeam === team && m.botOwner === owner)
+    !m.isTBD && (
+      (m.topTeam === team && m.topOwner === owner) ||
+      (m.botTeam === team && m.botOwner === owner)
+    )
   );
   if (!mine.length) return null;
-  mine.sort((a,b) => b.round - a.round);
-  const latest = mine[0];
+
+  // Sort by round ascending to walk the chain correctly
+  mine.sort((a,b) => a.round - b.round);
+
+  // The "latest" is the highest round they appear in with this team
+  const latest = mine[mine.length - 1];
   const side = latest.topTeam === team ? 'top' : 'bot';
   const sw = spreadOwnerWinner(latest);
 
@@ -1284,20 +1315,13 @@ function teamEntryStatus(owner, team) {
   const curSeed = side === 'top' ? latest.topSeed : latest.botSeed;
   const nextM = status === 'alive'
     ? MATCHUPS.find(m =>
-        m.round === latest.round + 1 &&
+        !m.isTBD && m.round === latest.round + 1 &&
         ((m.topTeam === team && m.topOwner === owner) ||
          (m.botTeam === team && m.botOwner === owner))
       )
     : null;
 
   return { latest, side, status, team, curSeed, nextM };
-}
-
-// Get all unique teams for an owner from OWNER_MAP
-function teamsForOwner(owner) {
-  return Object.entries(OWNER_MAP)
-    .filter(([, v]) => v.owner === owner)
-    .map(([team]) => team);
 }
 
 // Overall owner status = best of their two teams
@@ -1585,7 +1609,18 @@ function doSearch(q) {
   document.getElementById('sr-body').innerHTML = html;
   document.getElementById('search-results').classList.add('visible');
 }
-function closeSearch(){document.getElementById('search-results').classList.remove('visible');document.getElementById('search').value='';}
+function closeSearch(){
+  document.getElementById('search-results').classList.remove('visible');
+  document.getElementById('search').value='';
+  // Reset zoom on mobile after keyboard dismissal
+  if (window.innerWidth < 768) {
+    const mv = document.querySelector('meta[name=viewport]');
+    if (mv) {
+      mv.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0';
+      setTimeout(() => { mv.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover'; }, 300);
+    }
+  }
+}
 
 // ─── STATUS BAR ───────────────────────────────────────────────────────────────
 function setStatus(state,msg){

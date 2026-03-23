@@ -72,9 +72,14 @@
   .round-dates{font-size:11px;color:var(--muted);margin-top:2px;}
   .matchups-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding:8px 6px;border:1px solid var(--border);border-top:none;background:var(--bg2);}
   .matchup{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg);font-size:12px;}
-  .matchup.live-game{border-color:rgba(247,140,63,.4);box-shadow:0 0 0 1px rgba(247,140,63,.15);}
-  .matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(--border);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;justify-content:space-between;align-items:center;}
-  .live-badge{background:var(--green);color:#fff;border-radius:3px;font-size:9px;font-weight:700;padding:1px 4px;letter-spacing:.5px;animation:pulse 1.5s infinite;}
+  .matchup.live-game{border-color:var(--green);box-shadow:0 0 0 1px rgba(63,185,80,.2);}
+  .live-banner{background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.25);display:flex;align-items:center;justify-content:space-between;padding:3px 8px;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;flex-shrink:0;}
+  .live-label{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;}
+  .live-clock{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;opacity:.8;}
+  .score-box{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--muted);flex-shrink:0;min-width:24px;text-align:right;}
+  .score-box.lead{color:var(--text);}
+  .matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(--border);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;flex-direction:column;}
   .matchup-team{align-items:center;border-bottom:1px solid var(--border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
   .matchup-team:last-child{border-bottom:none;}
   .matchup-team:hover{background:var(--bg3);}
@@ -135,7 +140,7 @@
     <div class="logo">🏀 <span>2026</span> NCAA Spread Pool</div>
     <div class="search-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="search" placeholder="Search your name…" autocomplete="off" autocorrect="off">
+      <input type="text" id="search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
     </div>
     <div class="tab-bar">
       <button class="tab active" onclick="showView('bracket')">Bracket</button>
@@ -182,57 +187,57 @@
 <script>
 // ─── OWNER MAP ────────────────────────────────────────────────────────────────
 const OWNER_MAP = {
-  // South
-  'Duke':             {owner:'Callie',  seed:1,  region:'South'},
-  'Siena':            {owner:'Julie',   seed:16, region:'South'},
-  'Ohio St.':         {owner:'Rachel',  seed:8,  region:'South'},
-  'TCU':              {owner:'Jake',    seed:9,  region:'South'},
-  "St. John's":       {owner:'Brian P', seed:5,  region:'South'},
-  'Northern Iowa':    {owner:'Steph',   seed:12, region:'South'},
-  'Kansas':           {owner:'Lori',    seed:4,  region:'South'},
-  'Cal Baptist':      {owner:'Alan',    seed:13, region:'South'},
-  'Louisville':       {owner:'Nick',    seed:6,  region:'South'},
-  'South Florida':    {owner:'Jon',     seed:11, region:'South'},
-  'Michigan St.':     {owner:'Brian T', seed:3,  region:'South'},
-  'North Dakota St.': {owner:'Mike F',  seed:14, region:'South'},
-  'UCLA':             {owner:'Morgan',  seed:7,  region:'South'},
-  'UCF':              {owner:'Mike H',  seed:10, region:'South'},
-  'UConn':            {owner:'Ethan',   seed:2,  region:'South'},
-  'Furman':           {owner:'Ron',     seed:15, region:'South'},
   // West
-  'Florida':          {owner:'Betsy',   seed:1,  region:'West'},
-  'Prairie View':     {owner:'David',   seed:16, region:'West'},
-  'Clemson':          {owner:'Boris',   seed:8,  region:'West'},
-  'Iowa':             {owner:'Kelsey',  seed:9,  region:'West'},
-  'Vanderbilt':       {owner:'Tim',     seed:5,  region:'West'},
-  'McNeese':          {owner:'Eric',    seed:12, region:'West'},
-  'Nebraska':         {owner:'Ashley',  seed:4,  region:'West'},
-  'Troy':             {owner:'Becca',   seed:13, region:'West'},
-  'North Carolina':   {owner:'Troy',    seed:6,  region:'West'},
-  'VCU':              {owner:'Cassie',  seed:11, region:'West'},
-  'Illinois':         {owner:'Josh',    seed:3,  region:'West'},
-  'Penn':             {owner:'Henry',   seed:14, region:'West'},
-  "Saint Mary's":     {owner:'Caroline',seed:7,  region:'West'},
-  'Texas A&M':        {owner:'Abi',     seed:10, region:'West'},
-  'Houston':          {owner:'Jonathon',seed:2,  region:'West'},
-  'Idaho':            {owner:'Amy',     seed:15, region:'West'},
-  // East
-  'Arizona':          {owner:'Morgan',  seed:1,  region:'East'},
-  'Long Island':      {owner:'Boris',   seed:16, region:'East'},
-  'Utah St.':         {owner:'Julie',   seed:8,  region:'East'},
-  'Villanova':        {owner:'Josh',    seed:9,  region:'East'},
-  'Wisconsin':        {owner:'Caroline',seed:5,  region:'East'},
-  'High Point':       {owner:'Ashley',  seed:12, region:'East'},
-  'Arkansas':         {owner:'Jake',    seed:4,  region:'East'},
-  'Hawaii':           {owner:'Tim',     seed:13, region:'East'},
-  'BYU':              {owner:'Kelsey',  seed:6,  region:'East'},
-  'Texas':            {owner:'Ron',     seed:11, region:'East'},
-  'Gonzaga':          {owner:'Brian T', seed:3,  region:'East'},
-  'Kennesaw St.':     {owner:'Nick',    seed:14, region:'East'},
-  'Miami (FL)':       {owner:'Jon',     seed:7,  region:'East'},
-  'Missouri':         {owner:'Amy',     seed:10, region:'East'},
-  'Purdue':           {owner:'Mike F',  seed:2,  region:'East'},
-  "Queens (N.C.)":    {owner:'Steph',   seed:15, region:'East'},
+  'Duke':             {owner:'Callie',  seed:1,  region:'East'},
+  'Siena':            {owner:'Julie',   seed:16, region:'East'},
+  'Ohio St.':         {owner:'Rachel',  seed:8,  region:'East'},
+  'TCU':              {owner:'Jake',    seed:9,  region:'East'},
+  "St. John's":       {owner:'Brian P', seed:5,  region:'East'},
+  'Northern Iowa':    {owner:'Steph',   seed:12, region:'East'},
+  'Kansas':           {owner:'Lori',    seed:4,  region:'East'},
+  'Cal Baptist':      {owner:'Alan',    seed:13, region:'East'},
+  'Louisville':       {owner:'Nick',    seed:6,  region:'East'},
+  'South Florida':    {owner:'Jon',     seed:11, region:'East'},
+  'Michigan St.':     {owner:'Brian T', seed:3,  region:'East'},
+  'North Dakota St.': {owner:'Mike F',  seed:14, region:'East'},
+  'UCLA':             {owner:'Morgan',  seed:7,  region:'East'},
+  'UCF':              {owner:'Mike H',  seed:10, region:'East'},
+  'UConn':            {owner:'Ethan',   seed:2,  region:'East'},
+  'Furman':           {owner:'Ron',     seed:15, region:'East'},
+  // South
+  'Florida':          {owner:'Betsy',   seed:1,  region:'South'},
+  'Prairie View':     {owner:'David',   seed:16, region:'South'},
+  'Clemson':          {owner:'Boris',   seed:8,  region:'South'},
+  'Iowa':             {owner:'Kelsey',  seed:9,  region:'South'},
+  'Vanderbilt':       {owner:'Tim',     seed:5,  region:'South'},
+  'McNeese':          {owner:'Eric',    seed:12, region:'South'},
+  'Nebraska':         {owner:'Ashley',  seed:4,  region:'South'},
+  'Troy':             {owner:'Becca',   seed:13, region:'South'},
+  'North Carolina':   {owner:'Troy',    seed:6,  region:'South'},
+  'VCU':              {owner:'Cassie',  seed:11, region:'South'},
+  'Illinois':         {owner:'Josh',    seed:3,  region:'South'},
+  'Penn':             {owner:'Henry',   seed:14, region:'South'},
+  "Saint Mary's":     {owner:'Caroline',seed:7,  region:'South'},
+  'Texas A&M':        {owner:'Abi',     seed:10, region:'South'},
+  'Houston':          {owner:'Jonathon',seed:2,  region:'South'},
+  'Idaho':            {owner:'Amy',     seed:15, region:'South'},
+  // West
+  'Arizona':          {owner:'Morgan',  seed:1,  region:'West'},
+  'Long Island':      {owner:'Boris',   seed:16, region:'West'},
+  'Utah St.':         {owner:'Julie',   seed:8,  region:'West'},
+  'Villanova':        {owner:'Josh',    seed:9,  region:'West'},
+  'Wisconsin':        {owner:'Caroline',seed:5,  region:'West'},
+  'High Point':       {owner:'Ashley',  seed:12, region:'West'},
+  'Arkansas':         {owner:'Jake',    seed:4,  region:'West'},
+  'Hawaii':           {owner:'Tim',     seed:13, region:'West'},
+  'BYU':              {owner:'Kelsey',  seed:6,  region:'West'},
+  'Texas':            {owner:'Ron',     seed:11, region:'West'},
+  'Gonzaga':          {owner:'Brian T', seed:3,  region:'West'},
+  'Kennesaw St.':     {owner:'Nick',    seed:14, region:'West'},
+  'Miami (FL)':       {owner:'Jon',     seed:7,  region:'West'},
+  'Missouri':         {owner:'Amy',     seed:10, region:'West'},
+  'Purdue':           {owner:'Mike F',  seed:2,  region:'West'},
+  "Queens (N.C.)":    {owner:'Steph',   seed:15, region:'West'},
   // Midwest
   'Michigan':         {owner:'Callie',  seed:1,  region:'Midwest'},
   'Howard':           {owner:'Ethan',   seed:16, region:'Midwest'},
@@ -275,6 +280,83 @@ const ALIASES = {
   'USF':'South Florida','South Fla.':'South Florida',
   'UCONN':'UConn','Connecticut':'UConn',
   'NC State':'NC State',  // not in our pool, but prevent false matches
+  // ESPN full "DisplayName" mascot names → our canonical short names
+  'Arizona Wildcats':'Arizona',
+  'Utah State Aggies':'Utah St.',
+  'UConn Huskies':'UConn',
+  'UCLA Bruins':'UCLA',
+  'Florida Gators':'Florida',
+  'Iowa Hawkeyes':'Iowa',
+  'Purdue Boilermakers':'Purdue',
+  'Miami Hurricanes':'Miami (FL)',
+  'Iowa State Cyclones':'Iowa St.',
+  'Kentucky Wildcats':'Kentucky',
+  'Virginia Cavaliers':'Virginia',
+  'Tennessee Volunteers':'Tennessee',
+  'Kansas Jayhawks':'Kansas',
+  "St. John's Red Storm":"St. John's",
+  'Alabama Crimson Tide':'Alabama',
+  'Texas Tech Red Raiders':'Texas Tech',
+  'Texas Longhorns':'Texas',
+  'Houston Cougars':'Houston',
+  'Illinois Fighting Illini':'Illinois',
+  'Nebraska Cornhuskers':'Nebraska',
+  'Michigan Wolverines':'Michigan',
+  'Duke Blue Devils':'Duke',
+  'TCU Horned Frogs':'TCU',
+  'Ohio State Buckeyes':'Ohio St.',
+  'Michigan State Spartans':'Michigan St.',
+  'North Dakota State Bison':'North Dakota St.',
+  'Northern Iowa Panthers':'Northern Iowa',
+  'Kansas City Roos':'Cal Baptist',
+  'Cal Baptist Lancers':'Cal Baptist',
+  'Louisville Cardinals':'Louisville',
+  'South Florida Bulls':'South Florida',
+  'UCF Knights':'UCF',
+  'Furman Paladins':'Furman',
+  'Florida Gators':'Florida',
+  'Prairie View A&M Panthers':'Prairie View',
+  'Clemson Tigers':'Clemson',
+  'Vanderbilt Commodores':'Vanderbilt',
+  'McNeese Cowboys':'McNeese',
+  'McNeese State Cowboys':'McNeese',
+  'Nebraska Cornhuskers':'Nebraska',
+  'Troy Trojans':'Troy',
+  'North Carolina Tar Heels':'North Carolina',
+  'VCU Rams':'VCU',
+  'Illinois Fighting Illini':'Illinois',
+  'Pennsylvania Quakers':'Penn',
+  "Saint Mary's Gaels":"Saint Mary's",
+  'Texas A&M Aggies':'Texas A&M',
+  'Idaho Vandals':'Idaho',
+  'Long Island Sharks':'Long Island',
+  'LIU Sharks':'Long Island',
+  'Villanova Wildcats':'Villanova',
+  'Wisconsin Badgers':'Wisconsin',
+  'High Point Panthers':'High Point',
+  'Arkansas Razorbacks':'Arkansas',
+  'Hawaii Rainbow Warriors':'Hawaii',
+  "Hawai'i Rainbow Warriors":'Hawaii',
+  'BYU Cougars':'BYU',
+  'Gonzaga Bulldogs':'Gonzaga',
+  'Missouri Tigers':'Missouri',
+  'Queens Royals':"Queens (N.C.)",
+  'Michigan Wolverines':'Michigan',
+  'Howard Bison':'Howard',
+  'Saint Louis Billikens':'Saint Louis',
+  'Georgia Bulldogs':'Georgia',
+  'Texas Tech Red Raiders':'Texas Tech',
+  'Akron Zips':'Akron',
+  'Hofstra Pride':'Hofstra',
+  'Tennessee Volunteers':'Tennessee',
+  'Miami (OH) RedHawks':'Miami OH',
+  'Miami Ohio RedHawks':'Miami OH',
+  'Virginia Cavaliers':'Virginia',
+  'Wright State Raiders':'Wright St.',
+  'Santa Clara Broncos':'Santa Clara',
+  'Tennessee State Tigers':'Tennessee St.',
+  'Siena Saints':'Siena',
+  'Kennesaw State Owls':'Kennesaw St.',
 };
 
 const ROUNDS = ['First Round','Second Round','Sweet 16','Elite 8','Final Four','Championship'];
@@ -287,83 +369,74 @@ const ROUND_DATES = ['Mar 19–20','Mar 21–22','Mar 26–27','Mar 28–29','Ap
 // Format: { top, bot, topScore, botScore, spread, round, region }
 // spread > 0 = top team favored; winner determined by spreadOwnerWinner()
 const KNOWN_RESULTS = [
+  // All times UTC. R1: Mar 19-20, R2: Mar 21-22, Sweet 16: Mar 26-27, Elite 8: Mar 28-29
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // SOUTH REGION  (East bracket, labeled "South" in your pool)
+  // EAST REGION — Duke
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // First Round — Thu Mar 19 (Greenville) / Fri Mar 20 (Buffalo + Philadelphia)
-  {top:'Duke',         bot:'Siena',           topScore:71,  botScore:65, spread:27.5, round:0, region:'South'},
-  {top:'Ohio St.',     bot:'TCU',             topScore:64,  botScore:66, spread:2.5,  round:0, region:'South'},
-  {top:"St. John's",   bot:'Northern Iowa',   topScore:79,  botScore:53, spread:9.5,  round:0, region:'South'},
-  {top:'Kansas',       bot:'Cal Baptist',     topScore:68,  botScore:60, spread:14.0, round:0, region:'South'},
-  {top:'Louisville',   bot:'South Florida',   topScore:83,  botScore:79, spread:4.5,  round:0, region:'South'},
-  {top:'Michigan St.', bot:'North Dakota St.',topScore:92,  botScore:67, spread:16.0, round:0, region:'South'},
-  {top:'UCLA',         bot:'UCF',             topScore:75,  botScore:71, spread:5.5,  round:0, region:'South'},
-  {top:'UConn',        bot:'Furman',          topScore:82,  botScore:71, spread:20.5, round:0, region:'South'},
-  // Second Round — Sat Mar 21 (Greenville/Buffalo)
-  {top:'Duke',         bot:'TCU',             topScore:81,  botScore:58, spread:12.0, round:1, region:'South'},
-  {top:"St. John's",   bot:'Kansas',          topScore:67,  botScore:65, spread:-3.5, round:1, region:'South'},
-  {top:'Michigan St.', bot:'Louisville',      topScore:77,  botScore:69, spread:5.0,  round:1, region:'South'},
-  // UCLA vs UConn — Sun Mar 22 8:45pm ET, still in progress
-  {top:'UCLA',         bot:'UConn',           topScore:null,botScore:null,spread:4.5,  round:1, region:'South'},
+  {top:'Duke',         bot:'Siena',           topScore:71,  botScore:65, spread:27.5, round:0, region:'East',    gameDate:'2026-03-20T22:20:00Z'},
+  {top:'Ohio St.',     bot:'TCU',             topScore:64,  botScore:66, spread:2.5,  round:0, region:'East',    gameDate:'2026-03-21T00:50:00Z'},
+  {top:"St. John's",   bot:'Northern Iowa',   topScore:77,  botScore:53, spread:9.5,  round:0, region:'East',    gameDate:'2026-03-20T22:20:00Z'},
+  {top:'Kansas',       bot:'Cal Baptist',     topScore:68,  botScore:60, spread:14.0, round:0, region:'East',    gameDate:'2026-03-21T00:50:00Z'},
+  {top:'Louisville',   bot:'South Florida',   topScore:83,  botScore:79, spread:4.5,  round:0, region:'East',    gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Michigan St.', bot:'North Dakota St.',topScore:92,  botScore:67, spread:16.0, round:0, region:'East',    gameDate:'2026-03-20T02:40:00Z'},
+  {top:'UCLA',         bot:'UCF',             topScore:75,  botScore:71, spread:5.5,  round:0, region:'East',    gameDate:'2026-03-20T19:30:00Z'},
+  {top:'UConn',        bot:'Furman',          topScore:82,  botScore:71, spread:20.5, round:0, region:'East',    gameDate:'2026-03-20T17:00:00Z'},
+  // Second Round Sat Mar 21 / Sun Mar 22
+  {top:'Duke',         bot:'TCU',             topScore:81,  botScore:58, spread:12.0, round:1, region:'East',    gameDate:'2026-03-21T22:15:00Z'},
+  {top:"St. John's",   bot:'Kansas',          topScore:67,  botScore:65, spread:-3.5, round:1, region:'East',    gameDate:'2026-03-22T21:15:00Z'},
+  {top:'Michigan St.', bot:'Louisville',      topScore:77,  botScore:69, spread:5.0,  round:1, region:'East',    gameDate:'2026-03-21T20:00:00Z'},
+  {top:'UCLA',         bot:'UConn',           topScore:null,botScore:null,spread:4.5, round:1, region:'East',    gameDate:'2026-03-23T00:45:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // WEST REGION
+  // SOUTH REGION — Florida
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // First Round — Thu Mar 19 (Tampa/Oklahoma City) / Fri Mar 20 (Greenville/Oklahoma City)
-  {top:'Florida',      bot:'Prairie View',    topScore:114, botScore:55, spread:35.5, round:0, region:'West'},
-  {top:'Clemson',      bot:'Iowa',            topScore:61,  botScore:67, spread:-2.0, round:0, region:'West'},
-  {top:'Vanderbilt',   bot:'McNeese',         topScore:78,  botScore:68, spread:12.0, round:0, region:'West'},
-  {top:'Nebraska',     bot:'Troy',            topScore:76,  botScore:47, spread:13.0, round:0, region:'West'},
-  {top:'North Carolina',bot:'VCU',            topScore:78,  botScore:82, spread:2.5,  round:0, region:'West'},
-  {top:'Illinois',     bot:'Penn',            topScore:105, botScore:70, spread:25.5, round:0, region:'West'},
-  {top:"Saint Mary's", bot:'Texas A&M',       topScore:50,  botScore:63, spread:3.0,  round:0, region:'West'},
-  {top:'Houston',      bot:'Idaho',           topScore:78,  botScore:47, spread:23.5, round:0, region:'West'},
-  // Second Round — Sat Mar 21 (Oklahoma City)
-  {top:'Vanderbilt',   bot:'Nebraska',        topScore:72,  botScore:74, spread:-1.5, round:1, region:'West'},
-  {top:'VCU',          bot:'Illinois',        topScore:55,  botScore:76, spread:11.0, round:1, region:'West'},
-  {top:'Houston',      bot:'Texas A&M',       topScore:88,  botScore:57, spread:10.5, round:1, region:'West'},
-  // Florida vs Iowa — Sun Mar 22 7:10pm ET, still in progress
-  {top:'Florida',      bot:'Iowa',            topScore:null,botScore:null,spread:10.5, round:1, region:'West'},
+  {top:'Florida',      bot:'Prairie View',    topScore:114, botScore:55, spread:35.5, round:0, region:'South',   gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Clemson',      bot:'Iowa',            topScore:61,  botScore:67, spread:-2.0, round:0, region:'South',   gameDate:'2026-03-20T19:30:00Z'},
+  {top:'Vanderbilt',   bot:'McNeese',         topScore:78,  botScore:68, spread:12.0, round:0, region:'South',   gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Nebraska',     bot:'Troy',            topScore:76,  botScore:47, spread:13.0, round:0, region:'South',   gameDate:'2026-03-20T19:30:00Z'},
+  {top:'North Carolina',bot:'VCU',            topScore:78,  botScore:82, spread:2.5,  round:0, region:'South',   gameDate:'2026-03-20T21:50:00Z'},
+  {top:'Illinois',     bot:'Penn',            topScore:105, botScore:70, spread:25.5, round:0, region:'South',   gameDate:'2026-03-20T21:50:00Z'},
+  {top:"Saint Mary's", bot:'Texas A&M',       topScore:50,  botScore:63, spread:3.0,  round:0, region:'South',   gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Houston',      bot:'Idaho',           topScore:78,  botScore:47, spread:23.5, round:0, region:'South',   gameDate:'2026-03-20T19:30:00Z'},
+  // Second Round
+  {top:'Florida',      bot:'Iowa',            topScore:null,botScore:null,spread:10.5, round:1, region:'South',  gameDate:'2026-03-23T00:10:00Z'},
+  {top:'Vanderbilt',   bot:'Nebraska',        topScore:72,  botScore:74, spread:-1.5, round:1, region:'South',   gameDate:'2026-03-21T18:00:00Z'},
+  {top:'VCU',          bot:'Illinois',        topScore:55,  botScore:76, spread:11.0, round:1, region:'South',   gameDate:'2026-03-21T20:30:00Z'},
+  {top:'Texas A&M',    bot:'Houston',         topScore:57,  botScore:88, spread:10.5, round:1, region:'South',   gameDate:'2026-03-21T22:50:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // EAST REGION  (West bracket, labeled "East" in your pool)
+  // WEST REGION — Arizona
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // First Round — Fri Mar 20 (San Diego/Portland)
-  {top:'Arizona',      bot:'Long Island',     topScore:92,  botScore:58, spread:30.5, round:0, region:'East'},
-  {top:'Utah St.',     bot:'Villanova',        topScore:86,  botScore:76, spread:-1.5, round:0, region:'East'},
-  {top:'Wisconsin',    bot:'High Point',      topScore:82,  botScore:83, spread:10.0, round:0, region:'East'},
-  {top:'Arkansas',     bot:'Hawaii',          topScore:97,  botScore:78, spread:15.5, round:0, region:'East'},
-  {top:'BYU',          bot:'Texas',           topScore:71,  botScore:79, spread:2.5,  round:0, region:'East'},
-  {top:'Gonzaga',      bot:'Kennesaw St.',    topScore:73,  botScore:64, spread:21.5, round:0, region:'East'},
-  {top:'Miami (FL)',   bot:'Missouri',        topScore:80,  botScore:66, spread:2.0,  round:0, region:'East'},
-  {top:'Purdue',       bot:"Queens (N.C.)",   topScore:104, botScore:71, spread:25.5, round:0, region:'East'},
-  // Second Round — Sat Mar 21 (Portland)
-  {top:'Arkansas',     bot:'High Point',      topScore:94,  botScore:88, spread:11.5, round:1, region:'East'},
-  {top:'Texas',        bot:'Gonzaga',         topScore:74,  botScore:68, spread:6.5,  round:1, region:'East'},
-  // Arizona vs Utah St. — Sun Mar 22 7:50pm ET, still in progress
-  {top:'Arizona',      bot:'Utah St.',        topScore:null,botScore:null,spread:12.0, round:1, region:'East'},
-  // Miami (FL) vs Purdue — Sun Mar 22 12:10pm ET — FINAL
-  {top:'Miami (FL)',   bot:'Purdue',          topScore:69,  botScore:79, spread:7.5,  round:1, region:'East'},
+  {top:'Arizona',      bot:'Long Island',     topScore:92,  botScore:58, spread:30.5, round:0, region:'West',    gameDate:'2026-03-20T18:10:00Z'},
+  {top:'Utah St.',     bot:'Villanova',       topScore:86,  botScore:76, spread:-1.5, round:0, region:'West',    gameDate:'2026-03-20T20:40:00Z'},
+  {top:'Wisconsin',    bot:'High Point',      topScore:82,  botScore:83, spread:10.0, round:0, region:'West',    gameDate:'2026-03-21T02:00:00Z'},
+  {top:'Arkansas',     bot:'Hawaii',          topScore:97,  botScore:78, spread:15.5, round:0, region:'West',    gameDate:'2026-03-21T01:30:00Z'},
+  {top:'BYU',          bot:'Texas',           topScore:71,  botScore:79, spread:2.5,  round:0, region:'West',    gameDate:'2026-03-20T18:10:00Z'},
+  {top:'Gonzaga',      bot:'Kennesaw St.',    topScore:73,  botScore:64, spread:21.5, round:0, region:'West',    gameDate:'2026-03-20T20:40:00Z'},
+  {top:'Miami (FL)',   bot:'Missouri',        topScore:80,  botScore:66, spread:2.0,  round:0, region:'West',    gameDate:'2026-03-21T00:00:00Z'},
+  {top:'Purdue',       bot:"Queens (N.C.)",   topScore:104, botScore:71, spread:25.5, round:0, region:'West',    gameDate:'2026-03-21T00:30:00Z'},
+  // Second Round
+  {top:'Arizona',      bot:'Utah St.',        topScore:null,botScore:null,spread:12.0, round:1, region:'West',   gameDate:'2026-03-22T23:50:00Z'},
+  {top:'Arkansas',     bot:'High Point',      topScore:94,  botScore:88, spread:11.5, round:1, region:'West',    gameDate:'2026-03-22T18:00:00Z'},
+  {top:'Texas',        bot:'Gonzaga',         topScore:74,  botScore:68, spread:6.5,  round:1, region:'West',    gameDate:'2026-03-22T20:30:00Z'},
+  {top:'Miami (FL)',   bot:'Purdue',          topScore:69,  botScore:79, spread:7.5,  round:1, region:'West',    gameDate:'2026-03-22T17:10:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // MIDWEST REGION
+  // MIDWEST REGION — Michigan
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // First Round — Thu Mar 19 (Tampa/Philadelphia) / Fri Mar 20 (San Diego/Philadelphia)
-  {top:'Michigan',     bot:'Howard',          topScore:101, botScore:80, spread:31.0, round:0, region:'Midwest'},
-  {top:'Saint Louis',  bot:'Georgia',         topScore:102, botScore:77, spread:2.0,  round:0, region:'Midwest'},
-  {top:'Texas Tech',   bot:'Akron',           topScore:91,  botScore:71, spread:7.5,  round:0, region:'Midwest'},
-  {top:'Alabama',      bot:'Hofstra',         topScore:90,  botScore:70, spread:11.5, round:0, region:'Midwest'},
-  {top:'Tennessee',    bot:'Miami OH',        topScore:78,  botScore:56, spread:11.0, round:0, region:'Midwest'},
-  {top:'Virginia',     bot:'Wright St.',      topScore:82,  botScore:73, spread:18.0, round:0, region:'Midwest'},
-  {top:'Kentucky',     bot:'Santa Clara',     topScore:89,  botScore:84, spread:3.0,  round:0, region:'Midwest'},
-  {top:'Iowa St.',     bot:'Tennessee St.',   topScore:108, botScore:74, spread:24.5, round:0, region:'Midwest'},
-  // Second Round — Sat Mar 21 (Philadelphia/St. Louis)
-  {top:'Michigan',     bot:'Saint Louis',     topScore:95,  botScore:72, spread:12.0, round:1, region:'Midwest'},
-  {top:'Kentucky',     bot:'Iowa St.',        topScore:63,  botScore:82, spread:5.0,  round:1, region:'Midwest'},
-  // Virginia vs Tennessee — Sun Mar 22 6:10pm ET, still in progress
-  {top:'Virginia',     bot:'Tennessee',       topScore:null,botScore:null,spread:-1.0, round:1, region:'Midwest'},
-  // Alabama vs Texas Tech — Sun Mar 22 9:45pm ET, still in progress
-  {top:'Alabama',      bot:'Texas Tech',      topScore:null,botScore:null,spread:-1.0, round:1, region:'Midwest'},
+  {top:'Michigan',     bot:'Howard',          topScore:101, botScore:80, spread:31.0, round:0, region:'Midwest', gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Saint Louis',  bot:'Georgia',         topScore:102, botScore:77, spread:2.0,  round:0, region:'Midwest', gameDate:'2026-03-20T19:30:00Z'},
+  {top:'Texas Tech',   bot:'Akron',           topScore:91,  botScore:71, spread:7.5,  round:0, region:'Midwest', gameDate:'2026-03-20T21:50:00Z'},
+  {top:'Alabama',      bot:'Hofstra',         topScore:90,  botScore:70, spread:11.5, round:0, region:'Midwest', gameDate:'2026-03-20T17:00:00Z'},
+  {top:'Tennessee',    bot:'Miami OH',        topScore:78,  botScore:56, spread:11.0, round:0, region:'Midwest', gameDate:'2026-03-21T00:10:00Z'},
+  {top:'Virginia',     bot:'Wright St.',      topScore:82,  botScore:73, spread:18.0, round:0, region:'Midwest', gameDate:'2026-03-20T19:30:00Z'},
+  {top:'Kentucky',     bot:'Santa Clara',     topScore:89,  botScore:84, spread:3.0,  round:0, region:'Midwest', gameDate:'2026-03-21T01:40:00Z'},
+  {top:'Iowa St.',     bot:'Tennessee St.',   topScore:108, botScore:74, spread:24.5, round:0, region:'Midwest', gameDate:'2026-03-21T02:10:00Z'},
+  // Second Round
+  {top:'Michigan',     bot:'Saint Louis',     topScore:95,  botScore:72, spread:12.0, round:1, region:'Midwest', gameDate:'2026-03-21T17:10:00Z'},
+  {top:'Texas Tech',   bot:'Alabama',         topScore:null,botScore:null,spread:-1.0, round:1, region:'Midwest',gameDate:'2026-03-23T01:45:00Z'},
+  {top:'Tennessee',    bot:'Virginia',        topScore:79,  botScore:72, spread:-1.0, round:1, region:'Midwest', gameDate:'2026-03-22T23:10:00Z'},
+  {top:'Kentucky',     bot:'Iowa St.',        topScore:63,  botScore:82, spread:5.0,  round:1, region:'Midwest', gameDate:'2026-03-22T19:45:00Z'},
 ];
 
 // ─── BUILD MATCHUP OBJECTS FROM KNOWN RESULTS + FULL BRACKET PLACEHOLDERS ────
@@ -390,6 +463,7 @@ function buildFromKnown() {
       isPending: !hasScore, // pending = we know the matchup but not the result
       clock: '',
       period: 0,
+      gameDate: r.gameDate || null,
       fromKnown: true,
     };
   });
@@ -406,33 +480,33 @@ function buildFromKnown() {
   // ── ALL FIRST-ROUND MATCHUPS (complete structure, in bracket order) ──
   // Any first-round game not already in KNOWN_RESULTS gets added as a pending placeholder.
   const FIRST_ROUND_STRUCTURE = [
-    // South
-    {top:'Duke',         bot:'Siena',           spread:27.5,  region:'South'},
-    {top:'Ohio St.',     bot:'TCU',             spread:2.5,   region:'South'},
-    {top:"St. John's",   bot:'Northern Iowa',   spread:9.5,   region:'South'},
-    {top:'Kansas',       bot:'Cal Baptist',     spread:14.0,  region:'South'},
-    {top:'Louisville',   bot:'South Florida',   spread:4.5,   region:'South'},
-    {top:'Michigan St.', bot:'North Dakota St.',spread:16.0,  region:'South'},
-    {top:'UCLA',         bot:'UCF',             spread:5.5,   region:'South'},
-    {top:'UConn',        bot:'Furman',          spread:20.5,  region:'South'},
     // West
-    {top:'Florida',      bot:'Prairie View',    spread:35.5,  region:'West'},
-    {top:'Clemson',      bot:'Iowa',            spread:-2.0,  region:'West'},
-    {top:'Vanderbilt',   bot:'McNeese',         spread:12.0,  region:'West'},
-    {top:'Nebraska',     bot:'Troy',            spread:13.0,  region:'West'},
-    {top:'North Carolina',bot:'VCU',            spread:2.5,   region:'West'},
-    {top:'Illinois',     bot:'Penn',            spread:25.5,  region:'West'},
-    {top:"Saint Mary's", bot:'Texas A&M',       spread:3.0,   region:'West'},
-    {top:'Houston',      bot:'Idaho',           spread:23.5,  region:'West'},
-    // East
-    {top:'Arizona',      bot:'Long Island',     spread:30.5,  region:'East'},
-    {top:'Utah St.',     bot:'Villanova',       spread:-1.5,  region:'East'},
-    {top:'Wisconsin',    bot:'High Point',      spread:10.0,  region:'East'},
-    {top:'Arkansas',     bot:'Hawaii',          spread:15.5,  region:'East'},
-    {top:'BYU',          bot:'Texas',           spread:2.5,   region:'East'},
-    {top:'Gonzaga',      bot:'Kennesaw St.',    spread:21.5,  region:'East'},
-    {top:'Miami (FL)',   bot:'Missouri',        spread:2.0,   region:'East'},
-    {top:'Purdue',       bot:"Queens (N.C.)",   spread:25.5,  region:'East'},
+    {top:'Duke',         bot:'Siena',           spread:27.5,  region:'East'},
+    {top:'Ohio St.',     bot:'TCU',             spread:2.5,   region:'East'},
+    {top:"St. John's",   bot:'Northern Iowa',   spread:9.5,   region:'East'},
+    {top:'Kansas',       bot:'Cal Baptist',     spread:14.0,  region:'East'},
+    {top:'Louisville',   bot:'South Florida',   spread:4.5,   region:'East'},
+    {top:'Michigan St.', bot:'North Dakota St.',spread:16.0,  region:'East'},
+    {top:'UCLA',         bot:'UCF',             spread:5.5,   region:'East'},
+    {top:'UConn',        bot:'Furman',          spread:20.5,  region:'East'},
+    // South
+    {top:'Florida',      bot:'Prairie View',    spread:35.5,  region:'South'},
+    {top:'Clemson',      bot:'Iowa',            spread:-2.0,  region:'South'},
+    {top:'Vanderbilt',   bot:'McNeese',         spread:12.0,  region:'South'},
+    {top:'Nebraska',     bot:'Troy',            spread:13.0,  region:'South'},
+    {top:'North Carolina',bot:'VCU',            spread:2.5,   region:'South'},
+    {top:'Illinois',     bot:'Penn',            spread:25.5,  region:'South'},
+    {top:"Saint Mary's", bot:'Texas A&M',       spread:3.0,   region:'South'},
+    {top:'Houston',      bot:'Idaho',           spread:23.5,  region:'South'},
+    // West
+    {top:'Arizona',      bot:'Long Island',     spread:30.5,  region:'West'},
+    {top:'Utah St.',     bot:'Villanova',       spread:-1.5,  region:'West'},
+    {top:'Wisconsin',    bot:'High Point',      spread:10.0,  region:'West'},
+    {top:'Arkansas',     bot:'Hawaii',          spread:15.5,  region:'West'},
+    {top:'BYU',          bot:'Texas',           spread:2.5,   region:'West'},
+    {top:'Gonzaga',      bot:'Kennesaw St.',    spread:21.5,  region:'West'},
+    {top:'Miami (FL)',   bot:'Missouri',        spread:2.0,   region:'West'},
+    {top:'Purdue',       bot:"Queens (N.C.)",   spread:25.5,  region:'West'},
     // Midwest
     {top:'Michigan',     bot:'Howard',          spread:31.0,  region:'Midwest'},
     {top:'Saint Louis',  bot:'Georgia',         spread:2.0,   region:'Midwest'},
@@ -458,63 +532,138 @@ function buildFromKnown() {
     });
   }
 
-  // ── PLACEHOLDER MATCHUPS FOR ROUNDS 1–5 ──
-  // These show as "TBD vs TBD" slots so the full bracket skeleton is visible.
-  // They'll be replaced by real data from the API as rounds progress.
-  const ROUND_COUNTS = { South:4, West:4, East:4, Midwest:4 }; // matchups per round per region (R1=8,R2=4,S16=2,E8=1)
-  const roundMatchupCounts = [8, 4, 2, 1]; // per region
-  for (const region of ['South','West','East','Midwest']) {
+  // ── DERIVE LATER-ROUND MATCHUPS FROM KNOWN RESULTS ──
+  // Standard bracket: games pair in order within each round.
+  // R1 slots 0–7 → R2 pairs: (0,1),(2,3),(4,5),(6,7)
+  // R2 slots 0–3 → S16 pairs: (0,1),(2,3)
+  // S16 slots 0–1 → E8 pair:  (0,1)
+
+  // Helper: get the spread-adjusted winner's team info from a completed matchup
+  function advancingTeam(m) {
+    if (!m || m.isTBD) return null;
+    if (!m.isFinal || m.rawWinner === null) return null;
+    // Inline spread logic (spreadOwnerWinner defined later, so duplicate here)
+    let winner;
+    if (m.spread === null) {
+      winner = m.rawWinner;
+    } else {
+      const margin = (m.topScore??0) - (m.botScore??0);
+      if (m.spread > 0) winner = margin > m.spread ? 'top' : 'bot';
+      else winner = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+    }
+    if (winner === 'top') return { team: m.topTeam, owner: m.topOwner, seed: m.topSeed };
+    if (winner === 'bot') return { team: m.botTeam, owner: m.botOwner, seed: m.botSeed };
+    return null;
+  }
+
+  function makeMatchup(region, round, mA, mB, idx) {
+    const adA = advancingTeam(mA);
+    const adB = advancingTeam(mB);
+    const hasTeams = adA || adB;
+    if (!hasTeams) {
+      // Both undecided — pure TBD slot
+      return {
+        id: `tbd_${region}_${round}_${idx}_${placeholderIdx++}`,
+        round, region,
+        topSeed:null, topTeam:'TBD', topOwner:null, topScore:null,
+        botSeed:null, botTeam:'TBD', botOwner:null, botScore:null,
+        spread:null, rawWinner:null, isLive:false, isFinal:false, isPending:false,
+        isTBD:true, clock:'', period:0, fromKnown:true,
+      };
+    }
+    const top = adA || { team:'TBD', owner:null, seed:null };
+    const bot = adB || { team:'TBD', owner:null, seed:null };
+    return {
+      id: `derived_${region}_${round}_${idx}_${placeholderIdx++}`,
+      round, region,
+      topSeed: top.seed, topTeam: top.team, topOwner: top.owner, topScore: null,
+      botSeed: bot.seed, botTeam: bot.team, botOwner: bot.owner, botScore: null,
+      spread: null, rawWinner: null, isLive: false, isFinal: false, isPending: false,
+      isTBD: top.team === 'TBD' && bot.team === 'TBD',
+      isDerived: true, clock: '', period: 0, fromKnown: true,
+    };
+  }
+
+  for (const region of ['East','South','West','Midwest']) {
+    // Rounds 1 (R2=4 games), 2 (S16=2 games), 3 (E8=1 game)
     for (let round = 1; round <= 3; round++) {
-      const count = roundMatchupCounts[round];
-      const existingInRound = known.filter(m => m.region === region && m.round === round).length;
-      const needed = count - existingInRound;
-      for (let j = 0; j < needed; j++) {
-        known.push({
-          id: `tbd_${region}_${round}_${j}_${placeholderIdx++}`,
-          round, region,
-          topSeed: null, topTeam: 'TBD', topOwner: null, topScore: null,
-          botSeed: null, botTeam: 'TBD', botOwner: null, botScore: null,
-          spread: null, rawWinner: null, isLive: false, isFinal: false, isPending: false,
-          isTBD: true, clock: '', period: 0, fromKnown: true,
+      const existingInRound = known.filter(m => m.region === region && m.round === round && !m.isTBD && !m.isDerived);
+      if (existingInRound.length > 0) continue; // already have real data for this round/region
+
+      // Get previous round's matchups in order
+      const prevRound = known
+        .filter(m => m.region === region && m.round === round - 1 && !m.isTBD)
+        .sort((a, b) => {
+          // Sort by position in the bracket — use id index as proxy
+          const ai = parseInt(a.id.replace(/\D/g,'')) || 0;
+          const bi = parseInt(b.id.replace(/\D/g,'')) || 0;
+          return ai - bi;
         });
+
+      const expectedCount = [4, 2, 1][round - 1];
+      // Pair consecutive previous-round games
+      for (let i = 0; i < expectedCount; i++) {
+        const mA = prevRound[i * 2];
+        const mB = prevRound[i * 2 + 1];
+        known.push(makeMatchup(region, round, mA, mB, i));
       }
     }
   }
 
-  // Final Four (2 matchups) and Championship (1)
-  for (let j = 0; j < 2; j++) {
-    known.push({
-      id: `tbd_ff_${j}`,
-      round: 4, region: j === 0 ? 'South' : 'West',
-      topSeed:null, topTeam:'TBD', topOwner:null, topScore:null,
-      botSeed:null, botTeam:'TBD', botOwner:null, botScore:null,
-      spread:null, rawWinner:null, isLive:false, isFinal:false, isPending:false,
-      isTBD:true, clock:'', period:0, fromKnown:true,
-    });
-  }
-  known.push({
-    id: 'tbd_champ',
-    round: 5, region: 'Championship',
-    topSeed:null, topTeam:'TBD', topOwner:null, topScore:null,
-    botSeed:null, botTeam:'TBD', botOwner:null, botScore:null,
-    spread:null, rawWinner:null, isLive:false, isFinal:false, isPending:false,
-    isTBD:true, clock:'', period:0, fromKnown:true,
-  });
+  // Final Four — pair E8 winners: East vs West, South vs Midwest (standard bracket sides)
+  const e8Winners = {
+    East:    known.filter(m => m.region === 'East'    && m.round === 3)[0],
+    South:   known.filter(m => m.region === 'South'   && m.round === 3)[0],
+    West:    known.filter(m => m.region === 'West'    && m.round === 3)[0],
+    Midwest: known.filter(m => m.region === 'Midwest' && m.round === 3)[0],
+  };
+  known.push(makeMatchup('FinalFour', 4, e8Winners.East,  e8Winners.West,    0));
+  known.push(makeMatchup('FinalFour', 4, e8Winners.South, e8Winners.Midwest, 1));
 
-  const ro = {South:0, West:1, East:2, Midwest:3, Championship:4, Unknown:5};
+  // Championship
+  const ff = known.filter(m => m.round === 4);
+  known.push(makeMatchup('Championship', 5, ff[0], ff[1], 0));
+
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
   known.sort((a,b) => (a.round - b.round) || (ro[a.region] - ro[b.region]));
   return known;
 }
 
-// ─── ESPN API (via CORS proxy) ────────────────────────────────────────────────
-// Uses corsproxy.io which works from both local files and hosted pages
-const PROXY = 'https://corsproxy.io/?url=';
+// ─── ESPN API ──────────────────────────────────────────────────────
+// Try direct first (works when hosted), then fall back to CORS proxies
+// groups=100 ensures NCAA tournament games are included
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard';
+
+const PROXY_FNS = [
+  url => url,  // direct — works when page is hosted (not file://)
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
+async function fetchDate(date) {
+  const targetUrl = `${ESPN_BASE}?dates=${date}&groups=100&limit=100`;
+  let lastErr;
+  for (let i = 0; i < PROXY_FNS.length; i++) {
+    const makeUrl = PROXY_FNS[i];
+    try {
+      const r = await fetch(makeUrl(targetUrl), {cache:'no-store'});
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      console.log(`[ESPN] ${date}: ${data.events?.length ?? 0} events via ${i===0?'direct':'proxy '+i}`);
+      return data;
+    } catch(e) {
+      console.warn(`[ESPN] ${date} failed via ${i===0?'direct':'proxy '+i}:`, e.message);
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
 
 // All tournament dates — fetch broadly, filter to our teams
 const FETCH_DATES = [
   '20260319','20260320',
-  '20260321','20260322',
+  '20260321','20260322','20260323',
   '20260326','20260327',
   '20260328','20260329',
   '20260404',
@@ -536,69 +685,87 @@ function roundFromNotes(notes, dateStr) {
   if (t.includes('elite 8')||t.includes('elite eight')) return 3;
   if (t.includes('final four')) return 4;
   if (t.includes('national championship')||t.includes('championship game')) return 5;
-  // Infer from date
+  // Infer from date — extend ranges by 1 day to cover late games that tip past midnight UTC
   if (dateStr) {
     const d = parseInt(dateStr.replace(/-/g,''));
-    if (d>=20260319&&d<=20260320) return 0;
-    if (d>=20260321&&d<=20260322) return 1;
-    if (d>=20260326&&d<=20260327) return 2;
-    if (d>=20260328&&d<=20260329) return 3;
-    if (d===20260404) return 4;
-    if (d===20260406) return 5;
+    if (d>=20260319&&d<=20260321) return 0;
+    if (d>=20260321&&d<=20260323) return 1;
+    if (d>=20260326&&d<=20260328) return 2;
+    if (d>=20260328&&d<=20260330) return 3;
+    if (d>=20260404&&d<=20260405) return 4;
+    if (d>=20260406&&d<=20260407) return 5;
   }
   return null;
 }
 
 function regionFromNotes(notes, topO, botO) {
   const t = (notes||[]).map(n=>n.text||'').join(' ');
-  for (const r of ['South','West','East','Midwest']) if (t.includes(r)) return r;
+  for (const r of ['East','South','West','Midwest']) if (t.includes(r)) return r;
   return topO?.region || botO?.region || null;
 }
 
 function parseEvent(ev) {
+  try {
+    return _parseEvent(ev);
+  } catch(e) {
+    console.error('[parseEvent] crash:', e.message, e.stack?.split('\n')[1]);
+    return null;
+  }
+}
+
+function _parseEvent(ev) {
   const comp = (ev.competitions||[])[0];
   if (!comp) return null;
   const competitors = comp.competitors||[];
   if (competitors.length < 2) return null;
 
   const c0 = competitors[0], c1 = competitors[1];
-  const n0 = norm(c0.team?.displayName||c0.team?.shortDisplayName||'');
-  const n1 = norm(c1.team?.displayName||c1.team?.shortDisplayName||'');
+  const n0 = norm(c0.team?.shortDisplayName||c0.team?.displayName||'');
+  const n1 = norm(c1.team?.shortDisplayName||c1.team?.displayName||'');
   const o0 = ownerInfo(n0), o1 = ownerInfo(n1);
-  if (!o0 && !o1) return null;
+  const n0full = norm(c0.team?.displayName||'');
+  const n1full = norm(c1.team?.displayName||'');
+  const o0final = o0 || ownerInfo(n0full);
+  const o1final = o1 || ownerInfo(n1full);
+  if (!o0final && !o1final) return null;
 
+  // Sort by seed — lower seed number = top
   const s0 = parseInt(c0.curatedRank?.current||c0.seed||99);
   const s1 = parseInt(c1.curatedRank?.current||c1.seed||99);
   const [topC, botC] = s0 <= s1 ? [c0,c1] : [c1,c0];
-  const topName = norm(topC.team?.displayName||topC.team?.shortDisplayName||'');
-  const botName = norm(botC.team?.displayName||botC.team?.shortDisplayName||'');
-  const topO = ownerInfo(topName), botO = ownerInfo(botName);
+
+  function resolveTeamName(c) {
+    const short = norm(c.team?.shortDisplayName||'');
+    const full  = norm(c.team?.displayName||'');
+    return ownerInfo(short) ? short : ownerInfo(full) ? full : short || full;
+  }
+  const topName = resolveTeamName(topC);
+  const botName = resolveTeamName(botC);
+  const topO = ownerInfo(topName);
+  const botO = ownerInfo(botName);
 
   const topScore = parseInt(topC.score);
   const botScore = parseInt(botC.score);
   const statusName = ev.status?.type?.name||'';
-  const isLive = statusName==='STATUS_IN_PROGRESS';
-  const isFinal = statusName==='STATUS_FINAL';
+  const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD','STATUS_OVERTIME','STATUS_IN_OVERTIME']);
+  const isLive = LIVE_STATUSES.has(statusName);
+  const isFinal = statusName === 'STATUS_FINAL';
 
   let rawWinner = null;
   if (isFinal && !isNaN(topScore) && !isNaN(botScore)) {
     rawWinner = topScore > botScore ? 'top' : 'bot';
   }
 
-  // Parse spread from odds — only for scheduled (pre-game) matchups.
-  // Once a game is live or final the spread is frozen; we never overwrite
-  // a known spread with a mid-game or post-game odds line.
+  // Spread: only parse pre-game, never overwrite once live/final
   let spread = null;
-  const isScheduled = statusName === 'STATUS_SCHEDULED' || statusName === '';
+  const isScheduled = !isLive && !isFinal;
   const odds = (comp.odds||[])[0];
   if (isScheduled && odds?.details) {
-    const m = odds.details.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
-    if (m) {
-      const favNorm = norm(m[1].trim());
-      const amt = Math.abs(parseFloat(m[2]));
-      if (favNorm === topName) spread = amt;
-      else if (favNorm === botName) spread = -amt;
-      else spread = amt;
+    const om = odds.details.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
+    if (om) {
+      const favNorm = norm(om[1].trim());
+      const amt = Math.abs(parseFloat(om[2]));
+      spread = favNorm === topName ? amt : favNorm === botName ? -amt : amt;
     }
   }
 
@@ -606,6 +773,8 @@ function parseEvent(ev) {
   const dateStr = (ev.date||'').slice(0,10).replace(/-/g,'');
   const round = roundFromNotes(notes, dateStr);
   const region = regionFromNotes(notes, topO, botO);
+
+  console.log(`[parseEvent] ${topName} vs ${botName} | date=${dateStr} round=${round} region=${region} status=${statusName} notes="${notes.map(n=>n.text||'').join(',')}"`);
 
   if (round === null || !region) return null;
 
@@ -621,23 +790,20 @@ function parseEvent(ev) {
     spread, rawWinner, isLive, isFinal,
     clock: ev.status?.displayClock||'',
     period: ev.status?.period||0,
+    gameDate: ev.date||null,
   };
 }
 
-async function fetchDate(date) {
-  const url = `${PROXY}${encodeURIComponent(`${ESPN_BASE}?dates=${date}&limit=100`)}`;
-  const r = await fetch(url, {cache:'no-store'});
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-}
+
 
 async function loadLiveMatchups() {
   const seen = new Set();
   const live = [];
-  // Only fetch today + upcoming dates to keep it fast
+  // Fetch yesterday through all future tournament dates
   const today = new Date();
-  const todayStr = today.toISOString().slice(0,10).replace(/-/g,'');
-  const relevantDates = FETCH_DATES.filter(d => parseInt(d) >= parseInt(todayStr) - 1);
+  const todayNum = parseInt(today.toISOString().slice(0,10).replace(/-/g,''));
+  // Include yesterday in case of late games, all future dates
+  const relevantDates = FETCH_DATES.filter(d => parseInt(d) >= todayNum - 1);
 
   const results = await Promise.allSettled(relevantDates.map(d => fetchDate(d)));
   for (const res of results) {
@@ -655,40 +821,51 @@ async function loadLiveMatchups() {
 
 // ─── MERGE: layer live data on top of known results ───────────────────────────
 function mergeMatchups(known, live) {
-  // Index live by "topTeam+botTeam+round"
+  // Index live by both team orderings + round, so we always find a match
+  // regardless of which team ESPN lists first vs. our KNOWN_RESULTS ordering
   const liveIndex = {};
   for (const m of live) {
-    const key = [m.topTeam, m.botTeam, m.round].join('|');
+    const key1 = [m.topTeam, m.botTeam, m.round].join('|');
     const key2 = [m.botTeam, m.topTeam, m.round].join('|');
-    liveIndex[key] = m;
+    liveIndex[key1] = m;
     liveIndex[key2] = m;
   }
 
-  // Replace known results with live data if available, but always keep
-  // the known spread if the live version doesn't have one (spread is locked
-  // pre-game and must not be overwritten once a game starts or ends).
   const merged = known.map(k => {
-    const key = [k.topTeam, k.botTeam, k.round].join('|');
-    const live = liveIndex[key];
-    if (!live) return k;
+    // Try both orderings — known entry may have teams in different order than ESPN
+    const key1 = [k.topTeam, k.botTeam, k.round].join('|');
+    const key2 = [k.botTeam, k.topTeam, k.round].join('|');
+    const liveMatch = liveIndex[key1] || liveIndex[key2];
+    if (!liveMatch) return k;
     return {
-      ...live,
-      spread: live.spread !== null ? live.spread : k.spread, // keep known spread as fallback
+      ...liveMatch,
+      // Always preserve our known team ordering for display consistency
+      topTeam: k.topTeam, topOwner: k.topOwner, topSeed: k.topSeed,
+      botTeam: k.botTeam, botOwner: k.botOwner, botSeed: k.botSeed,
+      // Swap scores if ESPN returned teams in opposite order
+      topScore: liveMatch.topTeam === k.topTeam ? liveMatch.topScore : liveMatch.botScore,
+      botScore: liveMatch.topTeam === k.topTeam ? liveMatch.botScore : liveMatch.topScore,
+      rawWinner: liveMatch.rawWinner === null ? null
+        : liveMatch.topTeam === k.topTeam ? liveMatch.rawWinner
+        : liveMatch.rawWinner === 'top' ? 'bot' : 'top',
+      // Freeze spread at known value — never overwrite once game starts
+      spread: k.spread !== null ? k.spread : liveMatch.spread,
+      gameDate: liveMatch.gameDate || k.gameDate,
     };
   });
 
-  // Add any live matchups not in known (future rounds)
-  const knownKeys = new Set(known.map(k=>[k.topTeam,k.botTeam,k.round].join('|')));
+  // Add any live matchups not in known (future rounds picked up from API)
+  const knownKeys = new Set(known.flatMap(k => [
+    [k.topTeam, k.botTeam, k.round].join('|'),
+    [k.botTeam, k.topTeam, k.round].join('|'),
+  ]));
   for (const m of live) {
-    const key = [m.topTeam,m.botTeam,m.round].join('|');
-    const keyR = [m.botTeam,m.topTeam,m.round].join('|');
-    if (!knownKeys.has(key) && !knownKeys.has(keyR)) {
-      merged.push(m);
-    }
+    const key = [m.topTeam, m.botTeam, m.round].join('|');
+    if (!knownKeys.has(key)) merged.push(m);
   }
 
-  const ro = {South:0,West:1,East:2,Midwest:3,Unknown:4};
-  merged.sort((a,b)=>(a.round-b.round)||(ro[a.region]-ro[b.region]));
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
+  merged.sort((a,b) => (a.round - b.round) || (ro[a.region] - ro[b.region]));
   return merged;
 }
 
@@ -726,23 +903,101 @@ function teamRow(seed, team, owner, isWinner, isElim, hl, score, leading, showSc
   return `<div class="matchup-team${wc}${ec}">${seedH}<div class="team-info"><div class="team-name${wc}">${team||'TBD'}</div>${owner?`<div class="owner-name${oc}">${owner}</div>`:''}</div>${scoreH}${chk}</div>`;
 }
 
+// Format ISO date string → "Thu Mar 19, 7:10 PM" (user's local time)
+// Falls back to round-based approximate date label if no ISO date available
+function formatGameTime(iso, round) {
+  if (iso) {
+    try {
+      const d = new Date(iso);
+      // Only show time if it's not midnight UTC (some ESPN dates are date-only)
+      const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0;
+      const day = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+      if (hasTime) {
+        const time = d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+        return `${day}, ${time}`;
+      }
+      return day;
+    } catch(e) {}
+  }
+  // Fallback: approximate label from round number
+  const approx = ['Mar 19–20','Mar 21–22','Mar 26–27','Mar 28–29','Apr 4','Apr 6'];
+  return round != null && approx[round] ? approx[round] : null;
+}
+
 function matchupHtml(m, hl) {
+  const timeStr = formatGameTime(m.gameDate, m.round);
+  const timeHtml = timeStr
+    ? `<div style="font-size:10px;color:var(--muted);font-weight:400;font-family:'Barlow',sans-serif;margin-top:1px">${timeStr}</div>`
+    : '';
+
+  // ── TBD slot ──
   if (m.isTBD) {
     return `<div class="matchup tbd-slot">
-      <div class="matchup-spread"><span>Spread TBD</span></div>
+      <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
+        <span>Spread TBD</span>${timeHtml}
+      </div>
       <div class="matchup-team"><span class="seed" style="opacity:.3">?</span><div class="team-info"><div class="team-name" style="color:var(--muted)">TBD</div></div></div>
       <div class="matchup-team"><span class="seed" style="opacity:.3">?</span><div class="team-info"><div class="team-name" style="color:var(--muted)">TBD</div></div></div>
     </div>`;
   }
-  const sw=spreadOwnerWinner(m);
-  const topWin=sw==='top', botWin=sw==='bot';
-  const showScore=m.isLive||m.isFinal;
-  const topLead=m.isLive&&(m.topScore??0)>(m.botScore??0);
-  const botLead=m.isLive&&(m.botScore??0)>(m.topScore??0);
-  const liveBadge=m.isLive?`<span class="live-badge">LIVE${m.period?' '+m.period+'H':''} ${m.clock}</span>`:'';
-  const pendingBadge=m.isPending?`<span class="pending-badge">Upcoming</span>`:'';
+
+  // ── Derived (teams known, not yet played) ──
+  if (m.isDerived) {
+    const topName = m.topTeam !== 'TBD' ? m.topTeam : null;
+    const botName = m.botTeam !== 'TBD' ? m.botTeam : null;
+    const topHl = topName && hl && m.topOwner?.toLowerCase()===hl.toLowerCase();
+    const botHl = botName && hl && m.botOwner?.toLowerCase()===hl.toLowerCase();
+    const mkRow = (seed, name, owner, isHl) =>
+      `<div class="matchup-team">
+        ${seed?`<span class="seed">${seed}</span>`:`<span class="seed" style="opacity:.3">?</span>`}
+        <div class="team-info">
+          <div class="team-name" style="color:${name?'var(--text)':'var(--muted)'}">${name||'TBD'}</div>
+          ${owner?`<div class="owner-name${isHl?' hl':''}">${owner}</div>`:''}
+        </div>
+      </div>`;
+    return `<div class="matchup pending-game">
+      <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span>Spread TBD</span><span class="pending-badge">Upcoming</span></div>
+        ${timeHtml}
+      </div>
+      ${mkRow(m.topSeed, topName, m.topOwner, topHl)}
+      ${mkRow(m.botSeed, botName, m.botOwner, botHl)}
+    </div>`;
+  }
+
+  const sw = spreadOwnerWinner(m);
+  const topWin = sw==='top', botWin = sw==='bot';
+  const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
+  const botLead = m.isLive && (m.botScore??0) > (m.topScore??0);
+
+  // ── Live game banner ──
+  let topBanner = '';
+  if (m.isLive) {
+    const periodStr = m.period ? `${m.period}H` : '';
+    const clockStr = m.clock || '';
+    const gameInfo = [periodStr, clockStr].filter(Boolean).join(' ');
+    topBanner = `<div class="live-banner">
+      <div style="display:flex;align-items:center;gap:5px">
+        <span class="live-dot"></span>
+        <span class="live-label">LIVE</span>
+        ${gameInfo ? `<span class="live-clock">${gameInfo}</span>` : ''}
+      </div>
+      <span style="font-size:10px;color:rgba(63,185,80,.7);font-family:'Barlow',sans-serif">updates every 15s</span>
+    </div>`;
+  } else if (m.isPending) {
+    topBanner = `<div style="background:rgba(210,153,34,.08);border-bottom:1px solid rgba(210,153,34,.2);display:flex;align-items:center;gap:5px;padding:3px 8px">
+      <span class="pending-badge">Upcoming</span>
+    </div>`;
+  }
+
+  const showScore = m.isLive || m.isFinal;
+
   return `<div class="matchup${m.isLive?' live-game':''}${m.isPending?' pending-game':''}">
-    <div class="matchup-spread"><span>${spreadLabel(m)}</span>${liveBadge}${pendingBadge}</div>
+    ${topBanner}
+    <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span></div>
+      ${timeHtml}
+    </div>
     ${teamRow(m.topSeed,m.topTeam,m.topOwner,topWin,m.isFinal&&botWin,hl,m.topScore,topLead,showScore)}
     ${teamRow(m.botSeed,m.botTeam,m.botOwner,botWin,m.isFinal&&topWin,hl,m.botScore,botLead,showScore)}
   </div>`;
@@ -755,7 +1010,7 @@ function renderBracket(hl) {
     html+=`<div class="warn-banner">⚡ Showing known results through Round 2. Live data loading in background…</div>`;
   }
 
-  const regions=['South','West','East','Midwest'];
+  const regions=['East','South','West','Midwest'];
   regions.forEach(region=>{
     const rMs=MATCHUPS.filter(m=>m.region===region);
     html+=`<div class="region-lbl">${region} Region</div><div class="rounds-scroll"><div class="rounds-row">`;
@@ -929,16 +1184,85 @@ function renderPlayersView(filter) {
 
 
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
+function matchupCardSearch(m) {
+  // Render a compact matchup card for search results
+  const sw = spreadOwnerWinner(m);
+  const topWin = sw === 'top', botWin = sw === 'bot';
+  const showScore = m.isLive || m.isFinal;
+  const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
+  const botLead = m.isLive && (m.botScore??0) > (m.topScore??0);
+  const timeStr = formatGameTime(m.gameDate, m.round);
+
+  const statusLabel = m.isLive
+    ? `<span class="live-label" style="font-size:11px">● LIVE${m.clock ? ' · '+m.clock : ''}</span>`
+    : m.isFinal ? `<span style="font-size:11px;color:var(--muted)">Final</span>`
+    : m.isPending || m.isDerived ? `<span class="pending-badge">Upcoming</span>`
+    : `<span style="font-size:11px;color:var(--muted)">TBD</span>`;
+
+  const mkRow = (seed, team, owner, isWin, isElim, score, leading) => {
+    const wc = isWin ? ' winner' : '';
+    const ec = isElim ? ' elim' : '';
+    const scoreH = showScore && score !== null ? `<span class="score-box${leading?' lead':''}">${score}</span>` : '';
+    const chk = isWin ? '<span class="win-check">✓</span>' : '';
+    return `<div class="matchup-team${wc}${ec}">
+      ${seed ? `<span class="seed">${seed}</span>` : `<span class="seed" style="opacity:.3">?</span>`}
+      <div class="team-info">
+        <div class="team-name${wc}">${team||'TBD'}</div>
+        ${owner ? `<div class="owner-name">${owner}</div>` : ''}
+      </div>
+      ${scoreH}${chk}
+    </div>`;
+  };
+
+  return `<div class="player-card alive" style="padding:0;overflow:hidden;margin-bottom:10px">
+    <div style="background:rgba(247,140,63,.08);padding:5px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${ROUNDS[m.round]} · ${m.region}</span>
+      <div style="display:flex;align-items:center;gap:6px">${statusLabel}${timeStr ? `<span style="font-size:10px;color:var(--muted)">${timeStr}</span>` : ''}</div>
+    </div>
+    <div style="padding:4px 0">
+      ${mkRow(m.topSeed, m.topTeam, m.topOwner, topWin, m.isFinal&&botWin, m.topScore, topLead)}
+      ${mkRow(m.botSeed, m.botTeam, m.botOwner, botWin, m.isFinal&&topWin, m.botScore, botLead)}
+    </div>
+    ${m.spread !== null ? `<div style="padding:3px 10px;border-top:1px solid var(--border);font-size:11px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:600">${spreadLabel(m)}</div>` : ''}
+  </div>`;
+}
+
 function doSearch(q) {
-  if (!q.trim()){closeSearch();return;}
-  const ql=q.toLowerCase().trim();
-  const matched=[...new Set(Object.values(OWNER_MAP).map(o=>o.owner))].filter(o=>o.toLowerCase().includes(ql));
-  document.getElementById('sr-title').textContent=matched.length?`${matched.length} player${matched.length>1?'s':''} found`:'No results';
-  let html='';
-  if (!matched.length) {
-    html=`<div class="empty-msg" style="padding:20px">No player named "${q}"</div>`;
-  } else {
-    matched.forEach(owner => {
+  if (!q.trim()) { closeSearch(); return; }
+  const ql = q.toLowerCase().trim();
+
+  // Match owners (player names)
+  const allOwners = [...new Set(Object.values(OWNER_MAP).map(o=>o.owner))];
+  const matchedOwners = allOwners.filter(o => o.toLowerCase().includes(ql));
+
+  // Match teams
+  const allTeams = Object.keys(OWNER_MAP);
+  const matchedTeams = allTeams.filter(t => t.toLowerCase().includes(ql));
+
+  // Match matchups (either team in any game)
+  const matchedMatchups = MATCHUPS.filter(m =>
+    !m.isTBD &&
+    (m.topTeam.toLowerCase().includes(ql) || m.botTeam.toLowerCase().includes(ql) ||
+     (m.topOwner||'').toLowerCase().includes(ql) || (m.botOwner||'').toLowerCase().includes(ql))
+  );
+
+  const totalResults = matchedOwners.length + (matchedMatchups.length > 0 && matchedOwners.length === 0 ? matchedMatchups.length : 0);
+
+  if (!matchedOwners.length && !matchedMatchups.length) {
+    document.getElementById('sr-title').textContent = 'No results';
+    document.getElementById('sr-body').innerHTML = `<div class="empty-msg" style="padding:20px">Nothing found for "${q}"</div>`;
+    document.getElementById('search-results').classList.add('visible');
+    return;
+  }
+
+  let html = '';
+
+  // ── Player results ──
+  if (matchedOwners.length) {
+    if (matchedMatchups.length && !matchedOwners.some(o => o.toLowerCase() === ql)) {
+      html += `<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Players</div>`;
+    }
+    matchedOwners.forEach(owner => {
       const teams = teamsForOwner(owner);
       const entries = teams.map(t => teamEntryStatus(owner, t)).filter(Boolean);
       const overallStatus = ownerOverallStatus(owner);
@@ -966,7 +1290,6 @@ function doSearch(q) {
           <div style="font-size:11px;color:${statusColor}">${roundLabel}</div>${nextHtml}</div>
         </div>`;
       });
-
       html += `<div class="player-card ${cardClass}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <div class="player-name">${owner}</div>
@@ -976,7 +1299,29 @@ function doSearch(q) {
       </div>`;
     });
   }
-  document.getElementById('sr-body').innerHTML=html;
+
+  // ── Game/matchup results (when searching by team name) ──
+  // Only show if query doesn't fully match a player name (avoid duplication)
+  const queryMatchesOwner = matchedOwners.some(o => o.toLowerCase() === ql);
+  const gameMatchups = matchedMatchups.filter(m =>
+    m.topTeam.toLowerCase().includes(ql) || m.botTeam.toLowerCase().includes(ql)
+  );
+  if (gameMatchups.length && !queryMatchesOwner) {
+    if (matchedOwners.length) {
+      html += `<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:12px 0 8px">Games</div>`;
+    }
+    // Deduplicate — show each matchup once
+    const seen = new Set();
+    gameMatchups.forEach(m => {
+      if (seen.has(m.id)) return;
+      seen.add(m.id);
+      html += matchupCardSearch(m);
+    });
+  }
+
+  const resultCount = matchedOwners.length + (gameMatchups.length && !queryMatchesOwner ? gameMatchups.length : 0);
+  document.getElementById('sr-title').textContent = `${resultCount} result${resultCount !== 1 ? 's' : ''}`;
+  document.getElementById('sr-body').innerHTML = html;
   document.getElementById('search-results').classList.add('visible');
 }
 function closeSearch(){document.getElementById('search-results').classList.remove('visible');document.getElementById('search').value='';}
@@ -998,12 +1343,15 @@ async function fetchAndRender(manual=false) {
   if (manual) setStatus('','Refreshing live data…');
   try {
     const liveData = await loadLiveMatchups();
+    console.log('[DEBUG] Live matchups from ESPN:', liveData.length, liveData.map(m=>`${m.topTeam} vs ${m.botTeam} R${m.round} live=${m.isLive} final=${m.isFinal} top=${m.topScore} bot=${m.botScore}`));
     const known = buildFromKnown();
     MATCHUPS = mergeMatchups(known, liveData);
+    const liveGames = MATCHUPS.filter(m=>m.isLive);
+    console.log('[DEBUG] Live games after merge:', liveGames.map(m=>`${m.topTeam} vs ${m.botTeam} ${m.topScore}-${m.botScore}`));
     usingLive = true;
-    const liveCount = MATCHUPS.filter(m=>m.isLive).length;
+    const liveCount = liveGames.length;
     setStatus(liveCount?'live':'ok',
-      liveCount ? `${liveCount} game${liveCount>1?'s':''} live — updating every 60s`
+      liveCount ? `${liveCount} game${liveCount>1?'s':''} live — scores updating every 15s`
                 : `Live data loaded · ${MATCHUPS.length} games · Auto-refreshes every 3 min`);
     setUpdated();
   } catch(e) {
@@ -1018,8 +1366,9 @@ async function fetchAndRender(manual=false) {
 
 function scheduleRefresh() {
   clearInterval(refreshTimer);
-  const live=MATCHUPS.some(m=>m.isLive);
-  refreshTimer=setInterval(()=>fetchAndRender(), live?60_000:3*60_000);
+  const live = MATCHUPS.some(m=>m.isLive);
+  // 15s during live games, 3min otherwise
+  refreshTimer = setInterval(()=>fetchAndRender(), live ? 15_000 : 3*60_000);
 }
 
 function showView(v) {

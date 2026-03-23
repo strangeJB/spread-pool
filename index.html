@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026 NCAA Spread Pool</title>
+<title>2026 March Madness Spread Pool</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -17,127 +18,162 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;}
 
-  header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;}
-  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--accent);white-space:nowrap;}
-  .logo span{color:var(--text);font-weight:400;}
-  .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;}
-  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-  #search{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
-  #search::placeholder{color:var(--muted);}
-  #search:focus{border-color:var(--accent);}
-  .tab-bar{display:flex;gap:4px;margin-left:auto;}
-  .tab{background:none;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;}
-  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-  .tab:not(.active):hover{color:var(--text);border-color:var(--border2);}
+header{background:var(–bg2);border-bottom:1px solid var(–border);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.logo{font-family:‘Barlow Condensed’,sans-serif;font-size:18px;font-weight:700;color:var(–accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.logo span{color:var(–text);font-weight:400;}
+.search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(–muted);pointer-events:none;}
+#search{width:100%;background:var(–bg3);border:1px solid var(–border2);border-radius:20px;color:var(–text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
+#search::placeholder{color:var(–muted);}
+#search:focus{border-color:var(–accent);}
+.tab-bar{display:flex;gap:4px;margin-left:auto;}
+.tab{background:none;border:1px solid transparent;border-radius:6px;color:var(–muted);cursor:pointer;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;}
+.tab.active{background:var(–accent);border-color:var(–accent);color:#fff;}
+.tab:not(.active):hover{color:var(–text);border-color:var(–border2);}
 
-  #status-bar{background:var(--bg3);border-bottom:1px solid var(--border);font-size:12px;padding:6px 16px;}
-  .sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
-  .status-dot.live{background:var(--green);animation:pulse 1.5s infinite;}
-  .status-dot.error{background:var(--red);}
-  .status-dot.ok{background:var(--green);}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  #status-text{color:var(--muted);}
-  #last-updated{color:var(--muted);margin-left:auto;}
-  .refresh-btn{background:none;border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:all .15s;font-family:inherit;}
-  .refresh-btn:hover{color:var(--text);border-color:var(--accent);}
+#status-bar{background:var(–bg3);border-bottom:1px solid var(–border);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
+.sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(–muted);flex-shrink:0;}
+.status-dot.live{background:var(–green);animation:pulse 1.5s infinite;}
+.status-dot.error{background:var(–red);}
+.status-dot.ok{background:var(–blue);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#status-text{color:var(–muted);}
+#last-updated{color:var(–muted);margin-left:auto;}
+.refresh-btn{background:none;border:1px solid var(–border2);border-radius:4px;color:var(–muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:color .15s, border-color .15s;font-family:inherit;height:20px;line-height:1;display:inline-flex;align-items:center;overflow:hidden;min-width:66px;position:relative;}
+.refresh-btn:hover{color:var(–text);border-color:var(–accent);}
+.refresh-btn.spinning .bball{visibility:hidden;}
+.refresh-btn.spinning .bball-anim{display:block;}
+.bball-anim{display:none;position:absolute;left:0;font-size:13px;line-height:1;animation:dribble-across 2s ease-in-out infinite;}
+@keyframes dribble-across{
+0%  {left:4px;              transform:translateY(0px);}
+10% {left:10%;             transform:translateY(-5px);}
+20% {left:20%;             transform:translateY(2px);}
+30% {left:30%;             transform:translateY(-5px);}
+40% {left:40%;             transform:translateY(2px);}
+50% {left:50%;             transform:translateY(-5px);}
+60% {left:60%;             transform:translateY(2px);}
+70% {left:70%;             transform:translateY(-5px);}
+80% {left:80%;             transform:translateY(2px);}
+90% {left:90%;             transform:translateY(-5px);}
+100%{left:calc(100% - 18px);transform:translateY(2px);}
+}
 
-  #search-results{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;padding:80px 16px 16px;overflow-y:auto;}
-  #search-results.visible{display:block;}
-  .sr-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);max-width:560px;margin:0 auto;padding:20px;}
-  .sr-close{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-  .sr-close h2{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;}
-  .sr-close button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;}
-  .player-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;}
-  .player-card.alive{border-left:3px solid var(--green);}
-  .player-card.alive-pending{border-left:3px solid var(--yellow);}
-  .player-card.eliminated{border-left:3px solid var(--red);opacity:.75;}
-  .player-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
-  .player-team{font-size:13px;color:var(--muted);margin-bottom:6px;}
-  .status-pill{display:inline-block;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:2px 10px;text-transform:uppercase;}
-  .pill-alive{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);}
-  .pill-pending{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3);}
-  .pill-out{background:rgba(248,81,73,.12);color:var(--red);border:1px solid rgba(248,81,73,.25);}
+#search-results{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;padding:80px 16px 16px;overflow-y:auto;}
+#search-results.visible{display:block;}
+.sr-box{background:var(–bg2);border:1px solid var(–border2);border-radius:var(–r2);max-width:560px;margin:0 auto;padding:20px;}
+.sr-close{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.sr-close h2{font-family:‘Barlow Condensed’,sans-serif;font-size:18px;font-weight:600;}
+.sr-close button{background:none;border:none;color:var(–muted);cursor:pointer;font-size:20px;}
+.player-card{background:var(–bg3);border:1px solid var(–border);border-radius:var(–r);padding:14px 16px;margin-bottom:10px;}
+.player-card.alive{border-left:3px solid var(–green);}
+.player-card.alive-pending{border-left:3px solid var(–yellow);}
+.player-card.eliminated{border-left:3px solid var(–red);opacity:.75;}
+.player-name{font-family:‘Barlow Condensed’,sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+.player-team{font-size:13px;color:var(–muted);margin-bottom:6px;}
+.status-pill{display:inline-block;border-radius:20px;font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:2px 10px;text-transform:uppercase;}
+.pill-alive{background:rgba(63,185,80,.15);color:var(–green);border:1px solid rgba(63,185,80,.3);}
+.pill-pending{background:rgba(210,153,34,.15);color:var(–yellow);border:1px solid rgba(210,153,34,.3);}
+.pill-out{background:rgba(248,81,73,.12);color:var(–red);border:1px solid rgba(248,81,73,.25);}
 
-  #view-bracket,#view-players{display:none;}
-  #view-bracket.active,#view-players.active{display:block;}
-  .view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
+#view-bracket,#view-players{display:none;}
+#view-bracket.active,#view-players.active{display:block;}
+.view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
 
-  .rounds-scroll{overflow-x:auto;padding-bottom:12px;}
-  .rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
-  .round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
-  .round-header{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;padding:8px 10px 6px;text-align:center;}
-  .round-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);}
-  .round-dates{font-size:11px;color:var(--muted);margin-top:2px;}
-  .matchups-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding:8px 6px;border:1px solid var(--border);border-top:none;background:var(--bg2);}
-  .matchup{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg);font-size:12px;}
-  .matchup.live-game{border-color:var(--green);box-shadow:0 0 0 1px rgba(63,185,80,.2);}
-  .live-banner{background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.25);display:flex;align-items:center;justify-content:space-between;padding:3px 8px;}
-  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;flex-shrink:0;}
-  .live-label{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;}
-  .live-clock{color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;opacity:.8;}
-  .score-box{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--muted);flex-shrink:0;min-width:24px;text-align:right;}
-  .score-box.lead{color:var(--text);}
-  .matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(--border);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;flex-direction:column;}
-  .matchup-team{align-items:center;border-bottom:1px solid var(--border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
-  .matchup-team:last-child{border-bottom:none;}
-  .matchup-team:hover{background:var(--bg3);}
-  .matchup-team.winner{background:rgba(63,185,80,.07);}
-  .matchup-team.elim{opacity:.5;}
-  .seed{background:var(--bg3);border-radius:4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;min-width:20px;padding:1px 4px;text-align:center;}
-  .team-info{flex:1;min-width:0;}
-  .team-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .team-name.w{color:var(--green);}
-  .owner-name{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .owner-name.hl{color:var(--blue);font-weight:500;}
-  .score-box{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--muted);flex-shrink:0;}
-  .score-box.lead{color:var(--text);}
-  .win-check{color:var(--green);font-size:11px;flex-shrink:0;}
+.rounds-scroll{overflow-x:auto;padding-bottom:12px;}
+.rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
+.round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
+.round-header{background:var(–bg3);border:1px solid var(–border);border-radius:var(–r) var(–r) 0 0;padding:8px 10px 6px;text-align:center;}
+.round-name{font-family:‘Barlow Condensed’,sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(–accent);}
+.round-dates{font-size:11px;color:var(–muted);margin-top:2px;}
+.matchups-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding:8px 6px;border:1px solid var(–border);border-top:none;background:var(–bg2);}
+.matchup{border:1px solid var(–border);border-radius:var(–r);overflow:hidden;background:var(–bg);font-size:12px;}
+.matchup.live-game{border-color:var(–green);box-shadow:0 0 0 1px rgba(63,185,80,.2);}
+.live-banner{background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.25);display:flex;align-items:center;justify-content:space-between;padding:3px 8px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(–green);animation:pulse 1s infinite;flex-shrink:0;}
+.live-label{color:var(–green);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;}
+.live-clock{color:var(–green);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;opacity:.8;}
+.score-box{font-family:‘Barlow Condensed’,sans-serif;font-size:16px;font-weight:700;color:var(–muted);flex-shrink:0;min-width:24px;text-align:right;}
+.score-box.lead{color:var(–text);}
+.matchup-spread{background:rgba(247,140,63,.08);border-bottom:1px solid var(–border);color:var(–accent);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;padding:3px 8px;display:flex;flex-direction:column;}
+.matchup-team{align-items:center;border-bottom:1px solid var(–border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
+.matchup-team:last-child{border-bottom:none;}
+.matchup-team:hover{background:var(–bg3);}
+.matchup-team.winner{background:rgba(63,185,80,.07);}
+.matchup-team.elim{opacity:.5;}
+.seed{background:var(–bg3);border-radius:4px;color:var(–muted);font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:600;min-width:20px;padding:1px 4px;text-align:center;}
+.team-info{flex:1;min-width:0;}
+.team-name{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.team-name.w{color:var(–green);}
+.owner-name{color:var(–muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.owner-name.hl{color:var(–blue);font-weight:500;}
+.score-box{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;color:var(–muted);flex-shrink:0;}
+.score-box.lead{color:var(–text);}
+.win-check{color:var(–green);font-size:11px;flex-shrink:0;}
 
-  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-  .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border-color .15s;}
-  .pcard:hover{border-color:var(--border2);}
-  .pcard.alive{border-left:3px solid var(--green);}
-  .pcard.pending{border-left:3px solid var(--yellow);}
-  .pcard.out{border-left:3px solid var(--red);opacity:.65;}
-  .pcard-head{align-items:center;display:flex;gap:10px;margin-bottom:10px;}
-  .avatar{align-items:center;border-radius:50%;display:flex;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;height:38px;justify-content:center;width:38px;flex-shrink:0;}
-  .av-alive{background:rgba(63,185,80,.15);color:var(--green);}
-  .av-pending{background:rgba(210,153,34,.15);color:var(--yellow);}
-  .av-out{background:rgba(248,81,73,.12);color:var(--red);}
-  .pcard-name{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;}
-  .pcard-round{font-size:12px;color:var(--muted);margin-bottom:8px;}
-  .pcard-team-row{background:var(--bg3);border-radius:6px;display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;margin-bottom:4px;}
-  .upcoming-lbl{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.5px;margin:8px 0 4px;text-transform:uppercase;}
-  .next-box{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:6px;font-size:12px;padding:6px 10px;}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.pcard{background:var(–bg2);border:1px solid var(–border);border-radius:var(–r2);padding:14px 16px;transition:border-color .15s;}
+.pcard:hover{border-color:var(–border2);}
+.pcard.alive{border-left:3px solid var(–green);}
+.pcard.pending{border-left:3px solid var(–yellow);}
+.pcard.out{border-left:3px solid var(–red);opacity:.65;}
+.pcard-head{align-items:center;display:flex;gap:10px;margin-bottom:10px;}
+.avatar{align-items:center;border-radius:50%;display:flex;font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:700;height:38px;justify-content:center;width:38px;flex-shrink:0;}
+.av-alive{background:rgba(63,185,80,.15);color:var(–green);}
+.av-pending{background:rgba(210,153,34,.15);color:var(–yellow);}
+.av-out{background:rgba(248,81,73,.12);color:var(–red);}
+.pcard-name{font-family:‘Barlow Condensed’,sans-serif;font-size:19px;font-weight:700;}
+.pcard-round{font-size:12px;color:var(–muted);margin-bottom:8px;}
+.pcard-team-row{background:var(–bg3);border-radius:6px;display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;margin-bottom:4px;}
+.upcoming-lbl{color:var(–muted);font-size:11px;font-weight:600;letter-spacing:.5px;margin:8px 0 4px;text-transform:uppercase;}
+.next-box{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:6px;font-size:12px;padding:6px 10px;}
 
-  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;color:var(--muted);}
-  .legend-item{display:flex;align-items:center;gap:5px;}
-  .legend-dot{width:8px;height:8px;border-radius:50%;}
-  .rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(--r);color:var(--muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
-  .rules-note strong{color:var(--accent);}
-  .region-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:10px 0 4px;}
-  .empty-msg{color:var(--muted);font-size:14px;text-align:center;padding:40px;}
-  .warn-banner{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:var(--r);color:var(--yellow);font-size:12px;margin-bottom:16px;padding:10px 14px;}
-  .matchup.pending-game{border-color:rgba(210,153,34,.3);}
-  .pending-badge{background:rgba(210,153,34,.15);color:var(--yellow);border-radius:3px;font-size:9px;font-weight:700;padding:1px 5px;letter-spacing:.5px;border:1px solid rgba(210,153,34,.3);}
-  .tbd-slot{opacity:.4;}
-  .tbd-slot .matchup-spread{background:transparent;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;color:var(–muted);}
+.legend-item{display:flex;align-items:center;gap:5px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(–r);color:var(–muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
+.rules-note strong{color:var(–accent);}
+.region-lbl{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted);padding:10px 0 4px;}
+.empty-msg{color:var(–muted);font-size:14px;text-align:center;padding:40px;}
+.warn-banner{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.25);border-radius:var(–r);color:var(–yellow);font-size:12px;margin-bottom:16px;padding:10px 14px;}
+.matchup.highlight-pulse{animation:matchup-pulse 0.6s ease-in-out 4;}
+@keyframes matchup-pulse{
+0%,100%{border-color:var(–border);box-shadow:none;}
+50%{border-color:var(–accent);box-shadow:0 0 0 3px rgba(247,140,63,.35);}
+}
+.pending-badge{background:rgba(210,153,34,.15);color:var(–yellow);border-radius:3px;font-size:9px;font-weight:700;padding:1px 5px;letter-spacing:.5px;border:1px solid rgba(210,153,34,.3);}
+.tbd-slot{opacity:.4;}
+.tbd-slot .matchup-spread{background:transparent;}
 
-  @media(max-width:600px){
-    .tab{font-size:11px;padding:4px 8px;}
-    .logo{font-size:17px;}
-    .search-wrap{max-width:100%;width:100%;}
-    .players-grid{grid-template-columns:1fr;}
-  }
+@media(max-width:600px){
+.tab{font-size:11px;padding:4px 8px;}
+.logo{font-size:17px;}
+.search-wrap{max-width:100%;width:100%;}
+.players-grid{grid-template-columns:1fr;}
+}
+
+#loading-screen{position:fixed;inset:0;background:var(–bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
+#loading-screen.hidden{opacity:0;pointer-events:none;}
+.loading-ball{font-size:48px;animation:spin-ball 0.8s linear infinite;display:inline-block;}
+@keyframes spin-ball{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.loading-title{font-family:‘Barlow Condensed’,sans-serif;font-size:22px;font-weight:700;color:var(–accent);margin-top:16px;}
+.loading-sub{font-size:13px;color:var(–muted);margin-top:6px;}
 </style>
+
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="logo">🏀 <span>2026</span> NCAA Spread Pool</div>
+    <div class="logo">🏀 2026 March Madness Spread Pool</div>
+    <div style="position:relative;flex-shrink:0">
+      <button class="tab" onclick="toggleRules()" id="rules-btn" style="font-size:16px;padding:3px 10px;letter-spacing:0" title="Rules">···</button>
+      <div id="rules-dropdown" style="display:none;position:absolute;right:0;top:0;width:290px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:13px;margin-bottom:6px">How it works</div>
+        If the underdog loses by <em>less</em> than the spread (or wins outright), the underdog's owner advances — riding the winning team going forward. All ties go to the underdog.
+      </div>
+    </div>
     <div class="search-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
@@ -154,10 +190,12 @@
     <div class="status-dot" id="status-dot"></div>
     <span id="status-text">Loading…</span>
     <span id="last-updated"></span>
-    <button class="refresh-btn" onclick="fetchAndRender(true)">↻ Refresh</button>
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchAndRender(true)"><span class="bball">↻ Refresh</span><span class="bball-anim">🏀</span></button>
   </div>
 </div>
 
+<div id="loading-screen"><div class="loading-ball">🏀</div><div class="loading-title">2026 March Madness Spread Pool</div><div class="loading-sub">Loading bracket…</div></div>
+<div id="page-body">
 <div id="search-results">
   <div class="sr-box">
     <div class="sr-close">
@@ -170,7 +208,6 @@
 
 <div id="view-bracket" class="active">
   <div class="view-wrap">
-    <div class="rules-note"><strong>How it works:</strong> If the underdog loses by <em>less</em> than the spread (or wins outright), the underdog's owner advances. All ties go to the underdog.</div>
     <div class="legend">
       <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Advanced</span>
       <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>In progress / upcoming</span>
@@ -978,7 +1015,7 @@ function matchupHtml(m, hl) {
 
   // ── TBD slot ──
   if (m.isTBD) {
-    return `<div class="matchup tbd-slot">
+    return `<div class="matchup tbd-slot" data-id="${m.id}">
       <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
         <span>Spread TBD</span>${timeHtml}
       </div>
@@ -1001,7 +1038,7 @@ function matchupHtml(m, hl) {
           ${owner?`<div class="owner-name${isHl?' hl':''}">${owner}</div>`:''}
         </div>
       </div>`;
-    return `<div class="matchup pending-game">
+    return `<div class="matchup pending-game" data-id="${m.id}">
       <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
         <div style="display:flex;justify-content:space-between;align-items:center"><span>Spread TBD</span><span class="pending-badge">Upcoming</span></div>
         ${timeHtml}
@@ -1038,7 +1075,7 @@ function matchupHtml(m, hl) {
 
   const showScore = m.isLive || m.isFinal;
 
-  return `<div class="matchup${m.isLive?' live-game':''}${m.isPending?' pending-game':''}">
+  return `<div class="matchup${m.isLive?' live-game':''}${m.isPending?' pending-game':''}" data-id="${m.id}">
     ${topBanner}
     <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
       <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span></div>
@@ -1229,15 +1266,48 @@ function renderPlayersView(filter) {
 
 
 
+// Navigate to an owner's latest matchup in the bracket, highlight it
+function navigateToOwner(owner) {
+  closeSearch();
+  showView('bracket');
+  // Re-render with highlight so owner name glows, but only if needed
+  renderBracket(owner);
+  requestAnimationFrame(() => {
+    const ownerEls = document.querySelectorAll('.owner-name.hl');
+    if (!ownerEls.length) return;
+    const el = ownerEls[ownerEls.length - 1];
+    const card = el.closest('.matchup');
+    if (!card) return;
+    const y = card.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({top: y, behavior: 'smooth'});
+    card.classList.add('highlight-pulse');
+    card.addEventListener('animationend', () => card.classList.remove('highlight-pulse'), {once: true});
+  });
+}
+
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
+function navigateToMatchup(matchupId) {
+  closeSearch();
+  showView('bracket'); // skips re-render if already on bracket
+  // Double rAF ensures the view is visible before we measure positions
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const card = document.querySelector(`.matchup[data-id="${CSS.escape(matchupId)}"]`);
+    if (!card) return;
+    const y = card.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({top: y, behavior: 'smooth'});
+    card.classList.add('highlight-pulse');
+    card.addEventListener('animationend', () => card.classList.remove('highlight-pulse'), {once: true});
+  }));
+}
+
 function matchupCardSearch(m) {
-  // Render a compact matchup card for search results
   const sw = spreadOwnerWinner(m);
   const topWin = sw === 'top', botWin = sw === 'bot';
   const showScore = m.isLive || m.isFinal;
   const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
   const botLead = m.isLive && (m.botScore??0) > (m.topScore??0);
   const timeStr = formatGameTime(m.gameDate, m.round);
+  const safeId = m.id.replace(/'/g, "\\'");
 
   const statusLabel = m.isLive
     ? `<span class="live-label" style="font-size:11px">● LIVE${m.clock ? ' · '+m.clock : ''}</span>`
@@ -1260,12 +1330,12 @@ function matchupCardSearch(m) {
     </div>`;
   };
 
-  return `<div class="player-card alive" style="padding:0;overflow:hidden;margin-bottom:10px">
+  return `<div onclick="navigateToMatchup('${safeId}')" style="cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=''">
     <div style="background:rgba(247,140,63,.08);padding:5px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
       <span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${ROUNDS[m.round]} · ${m.region}</span>
-      <div style="display:flex;align-items:center;gap:6px">${statusLabel}${timeStr ? `<span style="font-size:10px;color:var(--muted)">${timeStr}</span>` : ''}</div>
+      <div style="display:flex;align-items:center;gap:6px">${statusLabel}${timeStr ? `<span style="font-size:10px;color:var(--muted)">${timeStr}</span>` : ''}<span style="font-size:10px;color:var(--muted);opacity:.6">↗</span></div>
     </div>
-    <div style="padding:4px 0">
+    <div style="background:var(--bg)">
       ${mkRow(m.topSeed, m.topTeam, m.topOwner, topWin, m.isFinal&&botWin, m.topScore, topLead)}
       ${mkRow(m.botSeed, m.botTeam, m.botOwner, botWin, m.isFinal&&topWin, m.botScore, botLead)}
     </div>
@@ -1330,10 +1400,19 @@ function doSearch(q) {
           const oppTeam = oppSide==='top'?e.latest.topTeam:e.latest.botTeam;
           nextHtml = `<div style="font-size:11px;color:var(--muted)">vs ${oppTeam} · ${spreadLabel(e.latest)}</div>`;
         }
-        teamsHtml += `<div style="display:flex;align-items:flex-start;gap:8px;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border-left:2px solid ${statusColor}">
+        // Target matchup: nextM if alive, otherwise latest (where they are/were)
+        const targetId = (e.nextM && e.status==='alive') ? e.nextM.id : e.latest.id;
+        const safeId = targetId.replace(/'/g,"\\'");
+        teamsHtml += `<div onclick="navigateToMatchup('${safeId}')"
+          style="display:flex;align-items:flex-start;gap:8px;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border-left:2px solid ${statusColor};cursor:pointer;transition:border-color .15s"
+          onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg)'">
           ${e.curSeed?`<span class="seed">${e.curSeed}</span>`:''}
-          <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px">${e.team}</div>
-          <div style="font-size:11px;color:${statusColor}">${roundLabel}</div>${nextHtml}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px">
+              ${e.team}<span style="font-size:10px;color:var(--muted)">↗</span>
+            </div>
+            <div style="font-size:11px;color:${statusColor}">${roundLabel}</div>${nextHtml}
+          </div>
         </div>`;
       });
       html += `<div class="player-card ${cardClass}">
@@ -1386,7 +1465,10 @@ function setUpdated(){
 
 // ─── FETCH + RENDER ───────────────────────────────────────────────────────────
 async function fetchAndRender(manual=false) {
-  if (manual) setStatus('','Refreshing live data…');
+  const btn = document.getElementById('refresh-btn');
+  btn?.classList.add('spinning');
+  const animStart = Date.now();
+  if (manual) setStatus('','Refreshing…');
   try {
     const liveData = await loadLiveMatchups();
     console.log('[DEBUG] Live matchups from ESPN:', liveData.length, liveData.map(m=>`${m.topTeam} vs ${m.botTeam} R${m.round} live=${m.isLive} final=${m.isFinal} top=${m.topScore} bot=${m.botScore}`));
@@ -1397,16 +1479,22 @@ async function fetchAndRender(manual=false) {
     usingLive = true;
     const liveCount = liveGames.length;
     setStatus(liveCount?'live':'ok',
-      liveCount ? `${liveCount} game${liveCount>1?'s':''} live — scores updating every 15s`
-                : `Live data loaded · ${MATCHUPS.length} games · Auto-refreshes every 3 min`);
+      liveCount ? `${liveCount} game${liveCount>1?'s':''} live — updating every 15s`
+                : `${MATCHUPS.length} games loaded`);
     setUpdated();
   } catch(e) {
     console.warn('ESPN API unavailable:', e.message);
     setStatus('error','ESPN API unavailable — showing cached results');
     setUpdated();
   }
+  const scrollY = window.scrollY; // save position before re-render
   if (currentView==='bracket') renderBracket(null);
   else renderPlayersView('');
+  window.scrollTo(0, scrollY); // restore after DOM update
+  const elapsed = Date.now() - animStart;
+  const minAnim = 2000;
+  if (elapsed < minAnim) await new Promise(r => setTimeout(r, minAnim - elapsed));
+  btn?.classList.remove('spinning');
   scheduleRefresh();
 }
 
@@ -1417,13 +1505,31 @@ function scheduleRefresh() {
   refreshTimer = setInterval(()=>fetchAndRender(), live ? 15_000 : 3*60_000);
 }
 
+function toggleRules() {
+  const btn = document.getElementById('rules-btn');
+  const d = document.getElementById('rules-dropdown');
+  if (d.style.display !== 'none') {
+    d.style.display = 'none';
+    return;
+  }
+  // Position using fixed coords so it never affects layout
+  const rect = btn.getBoundingClientRect();
+  d.style.position = 'fixed';
+  d.style.top = (rect.bottom + 6) + 'px';
+  d.style.right = (window.innerWidth - rect.right) + 'px';
+  d.style.display = 'block';
+}
+
 function showView(v) {
-  currentView=v;
-  document.getElementById('view-bracket').classList.toggle('active',v==='bracket');
-  document.getElementById('view-players').classList.toggle('active',v==='players');
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&v==='bracket')||(i===1&&v==='players')));
-  if (v==='players') renderPlayersView('');
-  else renderBracket(null);
+  const wasAlready = currentView === v;
+  currentView = v;
+  document.getElementById('view-bracket').classList.toggle('active', v==='bracket');
+  document.getElementById('view-players').classList.toggle('active', v==='players');
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&v==='bracket')||(i===1&&v==='players')));
+  if (!wasAlready) {
+    if (v==='players') renderPlayersView('');
+    else renderBracket(null);
+  }
 }
 
 // ─── LISTENERS ────────────────────────────────────────────────────────────────
@@ -1432,15 +1538,40 @@ let st;
 se.addEventListener('input',e=>{clearTimeout(st);const v=e.target.value;if(!v.trim()){closeSearch();return;}st=setTimeout(()=>doSearch(v),250);});
 se.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();if(e.key==='Enter')doSearch(e.target.value);});
 document.getElementById('search-results').addEventListener('click',e=>{if(e.target===document.getElementById('search-results'))closeSearch();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();document.getElementById('rules-dropdown').style.display='none';}});
+document.addEventListener('click',e=>{if(!document.getElementById('rules-btn')?.contains(e.target)){document.getElementById('rules-dropdown').style.display='none';}});
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
+// Show loading screen for at least 1.5s
+const loadStart = Date.now();
+function hideLoadingScreen() {
+  const elapsed = Date.now() - loadStart;
+  const delay = Math.max(0, 1500 - elapsed);
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    ls.classList.add('hidden');
+    setTimeout(() => ls.remove(), 400);
+  }, delay);
+}
+// Measure actual header height for sticky status bar offset
+function setHeaderHeight() {
+  const headerH = document.querySelector('header').offsetHeight;
+  const statusBar = document.getElementById('status-bar');
+  statusBar.style.top = headerH + 'px';
+  const totalH = headerH + statusBar.offsetHeight;
+  document.getElementById('page-body').style.paddingTop = totalH + 'px';
+}
+setHeaderHeight();
+window.addEventListener('resize', setHeaderHeight);
 // 1. Immediately render from known data (bracket is never empty)
 setStatus('','Loading live data from ESPN…');
 renderBracket(null);
+hideLoadingScreen();
 
 // 2. Then fetch live data in background and merge
 fetchAndRender();
 </script>
+
+</div>
 </body>
 </html>

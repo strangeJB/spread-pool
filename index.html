@@ -111,8 +111,7 @@
   .matchup-team{align-items:center;border-bottom:1px solid var(--border);display:flex;gap:6px;padding:5px 8px;transition:background .1s;}
   .matchup-team:last-child{border-bottom:none;}
   .matchup-team:hover{background:var(--bg3);}
-  .matchup-team.winner{background:rgba(63,185,80,.07);}
-  .matchup-team.elim{opacity:.5;}
+  .matchup-team.elim{opacity:.45;}
   .seed{background:var(--bg3);border-radius:4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;min-width:20px;padding:1px 4px;text-align:center;}
   .team-info{flex:1;min-width:0;}
   .team-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -121,7 +120,9 @@
   .owner-name.hl{color:var(--blue);font-weight:500;}
   .score-box{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--muted);flex-shrink:0;}
   .score-box.lead{color:var(--text);}
-  .win-check{color:var(--green);font-size:11px;flex-shrink:0;}
+  .win-check{color:var(--green);font-size:11px;}
+  .matchup-team.covered .team-name{color:var(--muted);}
+  .matchup-team.covered .owner-name{color:var(--accent);font-style:italic;}
 
   .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
   .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border-color .15s;}
@@ -830,28 +831,30 @@ function deriveSlots(matchups) {
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard';
 
 const PROXY_FNS = [
-  url => url,  // direct — works when page is hosted (not file://)
+  url => url,  // direct
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
   url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
   url => `https://thingproxy.freeboard.io/fetch/${url}`,
 ];
 
 async function fetchDate(date) {
   const targetUrl = `${ESPN_BASE}?dates=${date}&groups=100&limit=100`;
-  let lastErr;
   for (let i = 0; i < PROXY_FNS.length; i++) {
-    const makeUrl = PROXY_FNS[i];
     try {
-      const r = await fetch(makeUrl(targetUrl), {cache:'no-store'});
+      const r = await fetch(PROXY_FNS[i](targetUrl), {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(8000), // 8s timeout per attempt
+      });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
-      return data;
+      if (data && (data.events !== undefined)) return data; // valid ESPN response
+      throw new Error('Invalid response structure');
     } catch(e) {
-      console.warn(`[ESPN] ${date} failed via ${i===0?'direct':'proxy '+i}:`, e.message);
-      lastErr = e;
+      console.warn(`[ESPN] ${date} proxy ${i} failed:`, e.message);
     }
   }
-  throw lastErr;
+  return { events: [] }; // return empty rather than throwing — bracket still works from KNOWN_RESULTS
 }
 
 // All tournament dates — fetch broadly, filter to our teams
@@ -1106,7 +1109,18 @@ function spreadLabel(m) {
   if (m.spread === null) return 'Spread TBD';
   if (m.spread === 0) return "Pick'em";
   const abs = Math.abs(m.spread).toFixed(1).replace('.0','');
-  return m.spread > 0 ? `${m.topTeam} -${abs}` : `${m.botTeam} -${abs}`;
+  const label = m.spread > 0 ? `${m.topTeam} -${abs}` : `${m.botTeam} -${abs}`;
+  // If final and the underdog covered, note it
+  if (m.isFinal && m.rawWinner !== null) {
+    const sw = spreadOwnerWinner(m);
+    const scoredWinner = m.rawWinner;
+    if (sw !== scoredWinner) {
+      // Underdog covered
+      const coveredTeam = sw === 'top' ? m.topTeam : m.botTeam;
+      return `${label} · ${coveredTeam} covered`;
+    }
+  }
+  return label;
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
@@ -1115,13 +1129,19 @@ let usingLive = false;
 let currentView = 'bracket';
 let refreshTimer = null;
 
-function teamRow(seed, team, owner, isWinner, isElim, hl, score, leading, showScore) {
-  const wc=isWinner?' winner':'', ec=isElim?' elim':'';
-  const oc=owner&&hl&&owner.toLowerCase()===hl.toLowerCase()?' hl':'';
-  const seedH=seed?`<span class="seed">${seed}</span>`:`<span class="seed" style="opacity:.3">?</span>`;
-  const scoreH=showScore&&score!==null?`<span class="score-box${leading?' lead':''}">${score}</span>`:'';
-  const chk=isWinner?'<span class="win-check">✓</span>':'';
-  return `<div class="matchup-team${wc}${ec}">${seedH}<div class="team-info"><div class="team-name${wc}">${team||'TBD'}</div>${owner?`<div class="owner-name${oc}">${owner}</div>`:''}</div>${scoreH}${chk}</div>`;
+function teamRow(seed, team, owner, isScoreWinner, isSpreadWinner, isElim, isCovered, hl, score, leading, showScore) {
+  const ec = isElim ? ' elim' : '';
+  const covClass = isCovered ? ' covered' : '';
+  const oc = owner && hl && owner.toLowerCase() === hl.toLowerCase() ? ' hl' : '';
+  const seedH = seed ? `<span class="seed">${seed}</span>` : `<span class="seed" style="opacity:.3">?</span>`;
+  const scoreH = showScore && score !== null ? `<span class="score-box${leading?' lead':''}">${score}</span>` : '';
+  // Team name gets ✓ if they won the game outright
+  const teamChk = isScoreWinner ? ' <span class="win-check">✓</span>' : '';
+  // Owner name gets ✓ if their side covered the spread
+  const ownerChk = isSpreadWinner ? ' <span class="win-check" style="font-size:10px">✓</span>' : '';
+  const teamHtml = `<div class="team-name">${team||'TBD'}${teamChk}</div>`;
+  const ownerHtml = owner ? `<div class="owner-name${oc}">${owner}${ownerChk}</div>` : '';
+  return `<div class="matchup-team${ec}${covClass}">${seedH}<div class="team-info">${teamHtml}${ownerHtml}</div>${scoreH}</div>`;
 }
 
 // Format ISO date string → "Thu Mar 19, 7:10 PM" (user's local time)
@@ -1187,7 +1207,14 @@ function matchupHtml(m, hl) {
   }
 
   const sw = spreadOwnerWinner(m);
-  const topWin = sw==='top', botWin = sw==='bot';
+  const topSpreadWin = sw==='top', botSpreadWin = sw==='bot';
+  const topScoreWin = m.isFinal && m.rawWinner==='top';
+  const botScoreWin = m.isFinal && m.rawWinner==='bot';
+  // covered = lost outright but covered spread (owner advances)
+  const topCovered = m.isFinal && botScoreWin && topSpreadWin;
+  const botCovered = m.isFinal && topScoreWin && botSpreadWin;
+  const topElim = m.isFinal && !topSpreadWin;
+  const botElim = m.isFinal && !botSpreadWin;
   const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
   const botLead = m.isLive && (m.botScore??0) > (m.topScore??0);
 
@@ -1219,8 +1246,8 @@ function matchupHtml(m, hl) {
       <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span></div>
       ${timeHtml}
     </div>
-    ${teamRow(m.topSeed,m.topTeam,m.topOwner,topWin,m.isFinal&&botWin,hl,m.topScore,topLead,showScore)}
-    ${teamRow(m.botSeed,m.botTeam,m.botOwner,botWin,m.isFinal&&topWin,hl,m.botScore,botLead,showScore)}
+    ${teamRow(m.topSeed,m.topTeam,m.topOwner,topScoreWin,topSpreadWin,topElim,topCovered,hl,m.topScore,topLead,showScore)}
+    ${teamRow(m.botSeed,m.botTeam,m.botOwner,botScoreWin,botSpreadWin,botElim,botCovered,hl,m.botScore,botLead,showScore)}
   </div>`;
 }
 
@@ -1645,8 +1672,6 @@ async function fetchAndRender(manual=false) {
     const known = buildFromKnown();
     MATCHUPS = deriveSlots(mergeMatchups(known, liveData));
     const liveGames = MATCHUPS.filter(m=>m.isLive);
-    if (uconn)
-
     usingLive = true;
     const liveCount = liveGames.length;
     setStatus(liveCount?'live':'ok',
@@ -1654,7 +1679,7 @@ async function fetchAndRender(manual=false) {
                 : `${MATCHUPS.length} games loaded`);
     setUpdated();
   } catch(e) {
-    console.warn('ESPN API unavailable:', e.message);
+    console.warn('Fetch error:', e.message);
     setStatus('ok','Showing latest known results — refresh to retry');
     setUpdated();
   }

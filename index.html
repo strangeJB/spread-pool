@@ -30,9 +30,9 @@ header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding
 #search::placeholder{color:var(–muted);}
 #search:focus{border-color:var(–accent);}
 .tab-bar{display:flex;gap:4px;margin-left:auto;}
-.tab{background:none;border:1px solid transparent;border-radius:6px;color:var(–muted);cursor:pointer;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;}
-.tab.active{background:var(–accent);border-color:var(–accent);color:#fff;}
-.tab:not(.active):hover{color:var(–text);border-color:var(–border2);}
+.tab{background:none;border:1px solid transparent;border-radius:6px;color:var(–muted);cursor:pointer;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:5px 12px;transition:all .15s;text-transform:uppercase;-webkit-appearance:none;appearance:none;}
+.tab.active{background:#f78c3f;border-color:#f78c3f;color:#fff;}
+.tab:not(.active):hover{color:var(–text);border-color:rgba(255,255,255,0.14);}
 
 #status-bar{background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;position:fixed;left:0;right:0;z-index:99;}
 .sb-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -43,7 +43,7 @@ header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 #status-text{color:var(–muted);}
 #last-updated{color:var(–muted);margin-left:auto;}
-.refresh-btn{background:none;border:1px solid var(–border2);border-radius:4px;color:var(–muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:color .15s, border-color .15s;font-family:inherit;height:20px;line-height:1;display:inline-flex;align-items:center;overflow:hidden;min-width:66px;position:relative;}
+.refresh-btn{background:none;border:1px solid var(–border2);border-radius:4px;color:var(–muted);cursor:pointer;font-size:11px;padding:2px 8px;transition:color .15s, border-color .15s;font-family:inherit;height:20px;line-height:1;display:inline-flex;align-items:center;overflow:hidden;min-width:66px;position:relative;-webkit-appearance:none;appearance:none;}
 .refresh-btn:hover{color:var(–text);border-color:var(–accent);}
 .refresh-btn.spinning .bball{visibility:hidden;}
 .refresh-btn.spinning .bball-anim{display:block;}
@@ -181,8 +181,8 @@ header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding
       <input type="text" id="search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
     </div>
     <div class="tab-bar">
-      <button class="tab active" onclick="showView('bracket')">Bracket</button>
-      <button class="tab" onclick="showView('players')">Players</button>
+      <button class="tab active" data-view="bracket" onclick="showView('bracket')">Bracket</button>
+      <button class="tab" data-view="players" onclick="showView('players')">Players</button>
     </div>
   </div>
 </header>
@@ -1010,7 +1010,7 @@ function formatGameTime(iso, round) {
 }
 
 function matchupHtml(m, hl) {
-  const timeStr = formatGameTime(m.gameDate, m.round);
+  const timeStr = m.isFinal ? 'Final' : formatGameTime(m.gameDate, m.round);
   const timeHtml = timeStr
     ? `<div style="font-size:10px;color:var(--muted);font-weight:400;font-family:'Barlow',sans-serif;margin-top:1px">${timeStr}</div>`
     : '';
@@ -1527,7 +1527,7 @@ function showView(v) {
   currentView = v;
   document.getElementById('view-bracket').classList.toggle('active', v==='bracket');
   document.getElementById('view-players').classList.toggle('active', v==='players');
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&v==='bracket')||(i===1&&v==='players')));
+  document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.toggle('active', t.dataset.view === v));
   if (!wasAlready) {
     if (v==='players') renderPlayersView('');
     else renderBracket(null);

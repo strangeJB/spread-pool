@@ -91,8 +91,9 @@
   #view-bracket,#view-players{display:none;}
   #view-bracket.active,#view-players.active{display:block;}
   .view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
+  .bracket-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
 
-  .rounds-scroll{overflow-x:auto;padding-bottom:12px;}
+  .rounds-scroll{overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;}
   .rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
   .round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
   .round-header{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;padding:8px 10px 6px;text-align:center;}
@@ -169,13 +170,13 @@
   /* Ball arcs from bottom-left to hoop */
   .shoot-ball{position:absolute;font-size:28px;animation:shoot 1.2s cubic-bezier(.4,0,.6,1) infinite;transform-origin:center;}
   @keyframes shoot{
-    0%  {left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
+    0%  {left:34px; top:80px;  opacity:1; transform:rotate(0deg)   scale(1.0);}
     40% {left:70px; top:10px;  opacity:1; transform:rotate(180deg) scale(0.9);}
     65% {left:108px;top:32px;  opacity:1; transform:rotate(300deg) scale(0.8);}
     75% {left:108px;top:42px;  opacity:0; transform:rotate(360deg) scale(0.7);}
-    76% {left:10px; top:110px; opacity:0; transform:rotate(0deg)   scale(1.1);}
-    85% {left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
-    100%{left:10px; top:110px; opacity:1; transform:rotate(0deg)   scale(1.1);}
+    76% {left:34px; top:80px;  opacity:0; transform:rotate(0deg)   scale(1.0);}
+    85% {left:34px; top:80px;  opacity:1; transform:rotate(0deg)   scale(1.0);}
+    100%{left:34px; top:80px;  opacity:1; transform:rotate(0deg)   scale(1.0);}
   }
   /* Ripple inside net after ball goes in */
   .net-ripple{animation:ripple 1.2s ease-in-out infinite;}
@@ -461,6 +462,23 @@ const ALIASES = {
 const ROUNDS = ['First Round','Second Round','Sweet 16','Elite 8','Final Four','Championship'];
 const ROUND_DATES = ['Mar 19–20','Mar 21–22','Mar 26–27','Mar 28–29','Apr 4','Apr 6'];
 
+// Sweet 16 spreads and times (hardcoded since ESPN odds API is unreliable)
+// Thu Mar 26: West + South | Fri Mar 27: East + Midwest
+const SWEET16_DATA = [
+  // West — SAP Center, San Jose
+  {top:'Purdue',      bot:'Texas',       spread:7.5,  region:'West',    gameDate:'2026-03-26T23:10:00Z'},
+  {top:'Arizona',     bot:'Arkansas',    spread:8.5,  region:'West',    gameDate:'2026-03-27T02:45:00Z'},
+  // South — Toyota Center, Houston
+  {top:'Nebraska',    bot:'Iowa',        spread:2.5,  region:'South',   gameDate:'2026-03-27T00:30:00Z'},
+  {top:'Houston',     bot:'Illinois',    spread:2.5,  region:'South',   gameDate:'2026-03-27T03:05:00Z'},
+  // East — Capital One Arena, Washington D.C.
+  {top:'Duke',        bot:"St. John's",  spread:6.5,  region:'East',    gameDate:'2026-03-28T00:10:00Z'},
+  {top:'UConn',       bot:'Michigan St.',spread:1.5,  region:'East',    gameDate:'2026-03-28T02:45:00Z'},
+  // Midwest — United Center, Chicago
+  {top:'Michigan',    bot:'Alabama',     spread:10.5, region:'Midwest', gameDate:'2026-03-28T00:35:00Z'},
+  {top:'Iowa St.',    bot:'Tennessee',   spread:4.5,  region:'Midwest', gameDate:'2026-03-28T03:10:00Z'},
+];
+
 // ─── FALLBACK DATA ─────────────────────────────────────────────────────────
 // Known results through Second Round (Mar 19–22).
 // The app will layer live API data on top of this; this ensures the bracket
@@ -482,9 +500,9 @@ const KNOWN_RESULTS = [
   {top:'UConn',        bot:'Furman',          topScore:82,  botScore:71, spread:20.5, round:0, region:'East',    gameDate:'2026-03-20T17:00:00Z'},
   // Second Round Sat Mar 21 / Sun Mar 22
   {top:'Duke',         bot:'TCU',             topScore:81,  botScore:58, spread:12.0, round:1, region:'East',    gameDate:'2026-03-21T22:15:00Z'},
-  {top:"St. John's",   bot:'Kansas',          topScore:67,  botScore:65, spread:-3.5, round:1, region:'East',    gameDate:'2026-03-22T21:15:00Z'},
+  {top:"St. John's",   bot:'Kansas',          topScore:67,  botScore:65, spread:3.5, round:1, region:'East',    gameDate:'2026-03-22T21:15:00Z'},
   {top:'Michigan St.', bot:'Louisville',      topScore:77,  botScore:69, spread:5.0,  round:1, region:'East',    gameDate:'2026-03-21T20:00:00Z'},
-  {top:'UCLA',         bot:'UConn',           topScore:null,botScore:null,spread:4.5, round:1, region:'East',    gameDate:'2026-03-23T00:45:00Z'},
+  {top:'UCLA',         bot:'UConn',           topScore:57,  botScore:73, spread:-4.5, round:1, region:'East',    gameDate:'2026-03-23T00:45:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // SOUTH REGION — Florida
@@ -498,10 +516,10 @@ const KNOWN_RESULTS = [
   {top:"Saint Mary's", bot:'Texas A&M',       topScore:50,  botScore:63, spread:3.0,  round:0, region:'South',   gameDate:'2026-03-20T17:00:00Z'},
   {top:'Houston',      bot:'Idaho',           topScore:78,  botScore:47, spread:23.5, round:0, region:'South',   gameDate:'2026-03-20T19:30:00Z'},
   // Second Round
-  {top:'Florida',      bot:'Iowa',            topScore:null,botScore:null,spread:10.5, round:1, region:'South',  gameDate:'2026-03-23T00:10:00Z'},
-  {top:'Vanderbilt',   bot:'Nebraska',        topScore:72,  botScore:74, spread:-1.5, round:1, region:'South',   gameDate:'2026-03-21T18:00:00Z'},
-  {top:'VCU',          bot:'Illinois',        topScore:55,  botScore:76, spread:11.0, round:1, region:'South',   gameDate:'2026-03-21T20:30:00Z'},
-  {top:'Texas A&M',    bot:'Houston',         topScore:57,  botScore:88, spread:10.5, round:1, region:'South',   gameDate:'2026-03-21T22:50:00Z'},
+  {top:'Florida',      bot:'Iowa',            topScore:72,  botScore:73, spread:10.5, round:1, region:'South',  gameDate:'2026-03-23T00:10:00Z'},
+  {top:'Vanderbilt',   bot:'Nebraska',        topScore:72,  botScore:74, spread:1.5, round:1, region:'South',   gameDate:'2026-03-21T18:00:00Z'},
+  {top:'VCU',          bot:'Illinois',        topScore:55,  botScore:76, spread:-11.0, round:1, region:'South',   gameDate:'2026-03-21T20:30:00Z'},
+  {top:'Texas A&M',    bot:'Houston',         topScore:57,  botScore:88, spread:-10.5, round:1, region:'South',   gameDate:'2026-03-21T22:50:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // WEST REGION — Arizona
@@ -515,10 +533,10 @@ const KNOWN_RESULTS = [
   {top:'Miami (FL)',   bot:'Missouri',        topScore:80,  botScore:66, spread:2.0,  round:0, region:'West',    gameDate:'2026-03-21T00:00:00Z'},
   {top:'Purdue',       bot:"Queens (N.C.)",   topScore:104, botScore:71, spread:25.5, round:0, region:'West',    gameDate:'2026-03-21T00:30:00Z'},
   // Second Round
-  {top:'Arizona',      bot:'Utah St.',        topScore:null,botScore:null,spread:12.0, round:1, region:'West',   gameDate:'2026-03-22T23:50:00Z'},
+  {top:'Arizona',      bot:'Utah St.',        topScore:78,  botScore:66, spread:12.0, round:1, region:'West',   gameDate:'2026-03-22T23:50:00Z'},
   {top:'Arkansas',     bot:'High Point',      topScore:94,  botScore:88, spread:11.5, round:1, region:'West',    gameDate:'2026-03-22T18:00:00Z'},
-  {top:'Texas',        bot:'Gonzaga',         topScore:74,  botScore:68, spread:-3.5, round:1, region:'West',    gameDate:'2026-03-22T20:30:00Z'},
-  {top:'Miami (FL)',   bot:'Purdue',          topScore:69,  botScore:79, spread:7.5,  round:1, region:'West',    gameDate:'2026-03-22T17:10:00Z'},
+  {top:'Texas',        bot:'Gonzaga',         topScore:74,  botScore:68, spread:-6.5, round:1, region:'West',    gameDate:'2026-03-22T20:30:00Z'},
+  {top:'Miami (FL)',   bot:'Purdue',          topScore:69,  botScore:79, spread:-7.5,  round:1, region:'West',    gameDate:'2026-03-22T17:10:00Z'},
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // MIDWEST REGION — Michigan
@@ -533,7 +551,7 @@ const KNOWN_RESULTS = [
   {top:'Iowa St.',     bot:'Tennessee St.',   topScore:108, botScore:74, spread:24.5, round:0, region:'Midwest', gameDate:'2026-03-21T02:10:00Z'},
   // Second Round
   {top:'Michigan',     bot:'Saint Louis',     topScore:95,  botScore:72, spread:12.0, round:1, region:'Midwest', gameDate:'2026-03-21T17:10:00Z'},
-  {top:'Texas Tech',   bot:'Alabama',         topScore:null,botScore:null,spread:-1.0, round:1, region:'Midwest',gameDate:'2026-03-23T01:45:00Z'},
+  {top:'Texas Tech',   bot:'Alabama',         topScore:65,  botScore:90, spread:1.0,  round:1, region:'Midwest',gameDate:'2026-03-23T01:45:00Z'},
   {top:'Tennessee',    bot:'Virginia',        topScore:79,  botScore:72, spread:-1.0, round:1, region:'Midwest', gameDate:'2026-03-22T23:10:00Z'},
   {top:'Kentucky',     bot:'Iowa St.',        topScore:63,  botScore:82, spread:-5.0, round:1, region:'Midwest', gameDate:'2026-03-22T19:45:00Z'},
 ];
@@ -757,8 +775,15 @@ function deriveSlots(matchups) {
     const adB = mB ? advancingTeam(mB) : null;
     const top = adA || { team:'TBD', owner:null, seed:null };
     const bot = adB || { team:'TBD', owner:null, seed:null };
+    // bracketPos for derived slots: use the minimum bracketPos of their feeder games
+    // so they sort correctly relative to other slots in the same round
+    const feederPos = Math.min(
+      mA?.bracketPos ?? 9999,
+      mB?.bracketPos ?? 9999
+    );
     return {
       id: `derived_${region}_${round}_${idx}_${placeholderIdx++}`,
+      bracketPos: feederPos,
       round, region,
       topSeed: top.seed, topTeam: top.team, topOwner: top.owner, topScore: null,
       botSeed: bot.seed, botTeam: bot.team, botOwner: bot.owner, botScore: null,
@@ -770,7 +795,15 @@ function deriveSlots(matchups) {
 
   for (const region of ['East','South','West','Midwest']) {
     for (let round = 1; round <= 3; round++) {
-      const existing = matchups.filter(m => m.region===region && m.round===round && !m.isDerived);
+      // Only count non-ESPN entries as "existing" (ESPN future games have null owners)
+      const existing = matchups
+        .filter(m => m.region===region && m.round===round && !m.isDerived &&
+                     !(m.topOwner === null && m.botOwner === null && m.round > 1))
+        .sort((a,b) => {
+          const aPos = a.bracketPos ?? (parseInt((a.id.match(/known_(\d+)/)||[0,9999])[1]));
+          const bPos = b.bracketPos ?? (parseInt((b.id.match(/known_(\d+)/)||[0,9999])[1]));
+          return aPos - bPos;
+        });
       const prev = matchups
         .filter(m => m.region===region && m.round===round-1 && !m.isDerived)
         .sort((a,b) => {
@@ -788,18 +821,88 @@ function deriveSlots(matchups) {
       }
 
       if (existing.length > 0) {
-        // Update owners on existing entries from spread-pool logic
-        for (const m of existing) {
+        // Update owners on existing entries using spread-pool propagation
+        for (let i = 0; i < existing.length; i++) {
+          const m = existing[i];
           if (m.topTeam !== 'TBD' && ownerByTeam[m.topTeam] !== undefined) m.topOwner = ownerByTeam[m.topTeam];
           if (m.botTeam !== 'TBD' && ownerByTeam[m.botTeam] !== undefined) m.botOwner = ownerByTeam[m.botTeam];
+          if (m.bracketPos === undefined || m.bracketPos === null) {
+            const mA = prev[i * 2], mB = prev[i * 2 + 1];
+            m.bracketPos = Math.min(mA?.bracketPos ?? 9999, mB?.bracketPos ?? 9999);
+          }
+          // Apply hardcoded Sweet 16 spread/time if available
+          if (round === 2 && m.spread === null) {
+            const knownTeams = [m.topTeam, m.botTeam].filter(t => t && t !== 'TBD');
+            const s16 = SWEET16_DATA.find(d => d.region === region &&
+              knownTeams.some(t => d.top === t || d.bot === t));
+            if (s16) {
+              m.spread = s16.top === m.topTeam ? s16.spread : -s16.spread;
+              if (!m.gameDate) m.gameDate = s16.gameDate;
+            }
+          }
         }
       } else {
-        // No real data — derive slots from previous round
+        // No real data — derive slots from previous round results
         const count = [4,2,1][round-1];
         for (let i = 0; i < count; i++) {
-          matchups.push(makeSlot(region, round, prev[i*2], prev[i*2+1], i));
+          const slot = makeSlot(region, round, prev[i*2], prev[i*2+1], i);
+          // Apply hardcoded Sweet 16 data if available
+          // Match by region + at least one known team (handles TBD slots)
+          if (round === 2) {
+            const knownTeams = [slot.topTeam, slot.botTeam].filter(t => t && t !== 'TBD');
+            const s16 = SWEET16_DATA.find(d => d.region === region &&
+              knownTeams.some(t => d.top === t || d.bot === t));
+            if (s16) {
+              // Determine spread sign based on which team we know
+              // s16.spread > 0 means s16.top is favored
+              // We need: spread > 0 = slot.topTeam favored
+              let spread = s16.spread;
+              if (slot.topTeam === s16.top || slot.botTeam === s16.bot) {
+                spread = s16.spread; // same orientation
+              } else if (slot.topTeam === s16.bot || slot.botTeam === s16.top) {
+                spread = -s16.spread; // flipped
+              }
+              slot.spread = spread;
+              slot.gameDate = s16.gameDate;
+              slot.isPending = true;
+            }
+          }
+          matchups.push(slot);
         }
       }
+    }
+  }
+
+  // ── Post-derive: absorb ESPN spread/time/score into derived slots ──
+  const espnFuture = matchups.filter(m => !m.isDerived && m.topOwner === null && m.botOwner === null && m.round > 1);
+  for (const espn of espnFuture) {
+    const slot = matchups.find(s => s.isDerived &&
+      s.round === espn.round &&
+      s.topTeam !== 'TBD' && s.botTeam !== 'TBD' &&
+      ((s.topTeam === espn.topTeam && s.botTeam === espn.botTeam) ||
+       (s.topTeam === espn.botTeam && s.botTeam === espn.topTeam)));
+    if (slot) {
+      const flipped = slot.topTeam === espn.botTeam;
+      if (slot.spread === null && espn.spread !== null) slot.spread = espn.spread;
+      if (!slot.gameDate && espn.gameDate) slot.gameDate = espn.gameDate;
+      if (!slot.isFinal && !slot.isLive && (espn.isFinal || espn.isLive || espn.isPending)) {
+        slot.isFinal   = espn.isFinal;
+        slot.isLive    = espn.isLive;
+        slot.isPending = espn.isPending;
+        slot.topScore  = flipped ? espn.botScore : espn.topScore;
+        slot.botScore  = flipped ? espn.topScore : espn.botScore;
+        slot.rawWinner = espn.rawWinner === null ? null
+          : flipped ? (espn.rawWinner === 'top' ? 'bot' : 'top') : espn.rawWinner;
+        slot.clock  = espn.clock;
+        slot.period = espn.period;
+      }
+    }
+  }
+  // Remove all raw ESPN future entries — absorbed or not
+  for (let i = matchups.length - 1; i >= 0; i--) {
+    const m = matchups[i];
+    if (!m.isDerived && m.topOwner === null && m.botOwner === null && m.round > 1) {
+      matchups.splice(i, 1);
     }
   }
 
@@ -821,7 +924,14 @@ function deriveSlots(matchups) {
   const ff = matchups.filter(m => m.round===4);
   matchups.push(makeSlot('Championship', 5, ff[0], ff[1], 0));
 
-  matchups.sort((a,b) => (a.round-b.round) || (ro[a.region]-ro[b.region]));
+  matchups.sort((a,b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    if (ro[a.region] !== ro[b.region]) return ro[a.region] - ro[b.region];
+    // Within same round+region, sort by bracket position
+    const aPos = a.bracketPos ?? (parseInt((a.id.match(/known_(\d+)/)||[0,9999])[1]));
+    const bPos = b.bracketPos ?? (parseInt((b.id.match(/known_(\d+)/)||[0,9999])[1]));
+    return aPos - bPos;
+  });
   return matchups;
 }
 
@@ -1075,17 +1185,20 @@ function mergeMatchups(known, live) {
   for (const m of live) {
     const key  = [m.topTeam, m.botTeam, m.round].join('|');
     const keyR = [m.botTeam, m.topTeam, m.round].join('|');
-    const regionRound = `${m.region}|${m.round}`;
-    // Skip if: already in known, OR this is a future round we derive ourselves
-    if (knownKeys.has(key) || knownKeys.has(keyR)) continue;
-    if (m.round > maxKnownRound) continue; // deriveSlots handles these
-    if (coveredRegionRound.has(regionRound)) continue; // region+round has known data
-    // Replace raw OWNER_MAP owners with spread-pool owners
-    merged.push({
-      ...m,
-      topOwner: spreadPoolOwner(m.topTeam),
-      botOwner: spreadPoolOwner(m.botTeam),
-    });
+    if (knownKeys.has(key) || knownKeys.has(keyR)) continue; // already merged above
+
+    if (m.round > maxKnownRound) {
+      // Future round — allow through for spread/time/score data,
+      // but null out owners so deriveSlots can set them correctly
+      merged.push({ ...m, topOwner: null, botOwner: null });
+    } else if (!coveredRegionRound.has(`${m.region}|${m.round}`)) {
+      // Current round, region not covered by known data
+      merged.push({
+        ...m,
+        topOwner: spreadPoolOwner(m.topTeam),
+        botOwner: spreadPoolOwner(m.botTeam),
+      });
+    }
   }
 
   const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5, Unknown:6};
@@ -1198,7 +1311,7 @@ function matchupHtml(m, hl) {
       </div>`;
     return `<div class="matchup pending-game" data-id="${m.id}">
       <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
-        <div style="display:flex;justify-content:space-between;align-items:center"><span>Spread TBD</span><span class="pending-badge">Upcoming</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span><span class="pending-badge">Upcoming</span></div>
         ${timeHtml}
       </div>
       ${mkRow(m.topSeed, topName, m.topOwner, topHl)}
@@ -1260,21 +1373,20 @@ function renderBracket(hl) {
   const regions=['East','South','West','Midwest'];
   regions.forEach(region=>{
     const rMs=MATCHUPS.filter(m=>m.region===region);
-    html+=`<div class="region-lbl">${region} Region</div><div class="rounds-scroll"><div class="rounds-row">`;
-    // Always show through Elite 8 (round 3)
+    html+=`<div class="region-lbl">${region} Region</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row">`;
     for (let r=0; r<=3; r++) {
       const ms=rMs.filter(m=>m.round===r);
       html+=`<div class="round-col"><div class="round-header"><div class="round-name">${ROUNDS[r]}</div><div class="round-dates">${ROUND_DATES[r]}</div></div><div class="matchups-col">`;
       ms.forEach(m=>{html+=matchupHtml(m,hl);});
       html+=`</div></div>`;
     }
-    html+=`</div></div><br>`;
+    html+=`</div></div>`;
   });
 
-  // Always show Final Four + Championship
+  // Final Four + Championship
   const ff=MATCHUPS.filter(m=>m.round===4);
   const ch=MATCHUPS.filter(m=>m.round===5);
-  html+=`<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll"><div class="rounds-row" style="min-width:300px">`;
+  html+=`<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row" style="min-width:300px">`;
   html+=`<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
   ff.forEach(m=>{html+=matchupHtml(m,hl);});
   html+=`</div></div>`;
@@ -1284,6 +1396,18 @@ function renderBracket(hl) {
   html+=`</div></div>`;
 
   c.innerHTML=html;
+
+  // Sync horizontal scroll across all bracket regions
+  const scrollers = c.querySelectorAll('[data-bracket-scroll]');
+  let isSyncing = false;
+  scrollers.forEach(el => {
+    el.addEventListener('scroll', () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      scrollers.forEach(other => { if (other !== el) other.scrollLeft = el.scrollLeft; });
+      isSyncing = false;
+    }, {passive: true});
+  });
 }
 
 // ─── PLAYERS ──────────────────────────────────────────────────────────────────

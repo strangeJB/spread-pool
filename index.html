@@ -1463,6 +1463,40 @@ function teamEntryStatus(owner, team) {
   else if (!latest.isFinal) status = 'scheduled';
   else status = sw === side ? 'alive' : 'eliminated';
 
+  // If this game shows 'alive' (owner covered with this team), check if they
+  // subsequently appeared in a later round riding a different team.
+  // The original team entry should always show 'alive' (green/moved-on) since
+  // the owner DID cover here — the downstream chain is shown on a separate row.
+  // Exception: if the owner has NO later matchup yet (chain hasn't started),
+  // keep 'alive'. If later chain is eliminated, this entry stays 'alive' too
+  // (they covered here; it's the later game that ended them).
+  // Only override to 'eliminated' if owner NEVER continued (no later matchup found
+  // but we know they should be out — handled by the Nick/Cassie/Eric fix below).
+  if (status === 'alive') {
+    const laterMatchups = MATCHUPS.filter(m =>
+      !m.isTBD && m.round > latest.round &&
+      ((m.topOwner === owner && m.topTeam !== team) ||
+       (m.botOwner === owner && m.botTeam !== team))
+    );
+    if (laterMatchups.length > 0) {
+      // Owner continued with a different team after covering here.
+      // This entry correctly shows 'alive' (moved on). The later team's
+      // entry will reflect the current downstream status.
+      // Exception: if ALL later entries are final+eliminated, show eliminated
+      // (this handles the Nick/Cassie/Eric case where they covered but were
+      // then knocked out in the next round).
+      const allFinalEliminated = laterMatchups.every(m => {
+        if (!m.isFinal) return false;
+        const ls = m.topOwner === owner ? 'top' : 'bot';
+        return spreadOwnerWinner(m) !== ls;
+      });
+      if (allFinalEliminated) {
+        status = 'eliminated';
+      }
+      // Otherwise keep status = 'alive' — owner moved on, still going
+    }
+  }
+
   const curSeed = side === 'top' ? latest.topSeed : latest.botSeed;
   const nextM = status === 'alive'
     ? MATCHUPS.find(m =>
@@ -1503,32 +1537,41 @@ function renderPlayersView(filter) {
     if (!entries.length) return;
 
     const overallStatus = ownerOverallStatus(owner);
-    const cardClass = overallStatus === 'eliminated' ? 'out'
-      : (overallStatus === 'live' || overallStatus === 'scheduled') ? 'pending'
-      : 'alive';
+    const cardClass = overallStatus === 'eliminated' ? 'out' : 'alive';
     const avClass = `av-${cardClass}`;
 
     // Build one row per team entry
     let teamsHtml = '';
     entries.forEach(e => {
-      const statusColor = e.status === 'eliminated' ? 'var(--red)'
-        : e.status === 'alive' ? 'var(--green)'
-        : e.status === 'live' ? 'var(--green)'
-        : 'var(--muted)';
-      const statusIcon = e.status === 'eliminated' ? '✕'
-        : e.status === 'alive' ? '✓'
-        : e.status === 'live' ? '●'
-        : e.status === 'scheduled' ? '·'
-        : '?';
-      const roundLabel = e.status === 'eliminated'
-        ? `Out in ${ROUNDS[e.latest.round]}`
-        : e.status === 'alive'
-        ? `Alive · ${ROUNDS[e.latest.round]} ✓`
-        : e.status === 'live'
-        ? `🔴 Live · ${ROUNDS[e.latest.round]}`
-        : e.status === 'scheduled'
-        ? `Up · ${ROUNDS[e.latest.round]}`
-        : `${ROUNDS[e.latest.round]}`;
+      // Determine win/cover details for the label
+      const mSide = e.latest.topTeam === e.team ? 'top' : 'bot';
+      const scoreWon = e.latest.isFinal && e.latest.rawWinner === mSide;
+      const sw = spreadOwnerWinner(e.latest);
+      const spreadCovered = e.latest.isFinal && sw === mSide;
+
+      let statusColor, roundLabel;
+      if (e.status === 'live') {
+        statusColor = 'var(--green)';
+        roundLabel = `🔴 Live · ${ROUNDS[e.latest.round]}`;
+      } else if (e.status === 'scheduled') {
+        statusColor = 'var(--yellow)';
+        roundLabel = `Upcoming · ${ROUNDS[e.latest.round]}`;
+      } else if (e.status === 'eliminated') {
+        statusColor = 'var(--red)';
+        roundLabel = `Out in ${ROUNDS[e.latest.round]}`;
+      } else if (e.status === 'alive') {
+        statusColor = 'var(--green)';
+        if (scoreWon && spreadCovered) {
+          roundLabel = `Won · ${ROUNDS[e.latest.round]} ✓`;
+        } else if (!scoreWon && spreadCovered) {
+          roundLabel = `Covered · ${ROUNDS[e.latest.round]} ✓`;
+        } else {
+          roundLabel = `Alive · ${ROUNDS[e.latest.round]} ✓`;
+        }
+      } else {
+        statusColor = 'var(--muted)';
+        roundLabel = `${ROUNDS[e.latest.round]}`;
+      }
 
       let nextHtml = '';
       if (e.nextM) {
@@ -1543,22 +1586,21 @@ function renderPlayersView(filter) {
         nextHtml = `<div style="font-size:11px;color:var(--muted);margin-top:2px">vs ${oppTeam}${oppOwner ? ` (${oppOwner})` : ''} · ${spreadLabel(e.latest)}</div>`;
       }
 
-      teamsHtml += `<div class="pcard-team-row" style="border-left:2px solid ${statusColor}">
+      teamsHtml += `<div class="pcard-team-row" style="border-left:2px solid ${statusColor};cursor:pointer" onclick="navigateToMatchup('${e.latest.id}')" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
         ${e.curSeed ? `<span class="seed">${e.curSeed}</span>` : ''}
         <div style="flex:1;min-width:0">
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.team}</div>
           <div style="font-size:11px;color:${statusColor}">${roundLabel}</div>
           ${nextHtml}
         </div>
+        <span style="color:var(--muted);font-size:14px;opacity:.7">›</span>
       </div>`;
     });
 
     const pillClass = overallStatus === 'eliminated' ? 'pill-out'
-      : (overallStatus === 'live' || overallStatus === 'scheduled') ? 'pill-pending'
       : 'pill-alive';
-    const pillText = overallStatus === 'eliminated' ? 'Both Out'
+    const pillText = overallStatus === 'eliminated' ? 'Out'
       : overallStatus === 'live' ? '🔴 Live'
-      : overallStatus === 'scheduled' ? 'Upcoming'
       : 'Alive';
 
     html += `<div class="pcard ${cardClass}">
@@ -1589,7 +1631,10 @@ function navigateToOwner(owner) {
     const el = ownerEls[ownerEls.length - 1];
     const card = el.closest('.matchup');
     if (!card) return;
-    const y = card.getBoundingClientRect().top + window.scrollY - 120;
+    const headerH = document.querySelector('header').offsetHeight;
+    const statusBarH = document.getElementById('status-bar').offsetHeight;
+    const offset = headerH + statusBarH + 8;
+    const y = card.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({top: y, behavior: 'smooth'});
     card.classList.add('highlight-pulse');
     card.addEventListener('animationend', () => card.classList.remove('highlight-pulse'), {once: true});
@@ -1599,16 +1644,44 @@ function navigateToOwner(owner) {
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
 function navigateToMatchup(matchupId) {
   closeSearch();
-  showView('bracket'); // skips re-render if already on bracket
-  // Double rAF ensures the view is visible before we measure positions
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  const wasOnBracket = currentView === 'bracket';
+  showView('bracket');
+
+  function scrollAndPulse() {
     const card = document.querySelector(`.matchup[data-id="${CSS.escape(matchupId)}"]`);
     if (!card) return;
-    const y = card.getBoundingClientRect().top + window.scrollY - 120;
+    // Scroll the card's parent rounds-scroll container horizontally first
+    const scroller = card.closest('.rounds-scroll');
+    if (scroller) {
+      const cardLeft = card.getBoundingClientRect().left;
+      const scrollerLeft = scroller.getBoundingClientRect().left;
+      scroller.scrollLeft += cardLeft - scrollerLeft - 20;
+    }
+    const headerH = document.querySelector('header').offsetHeight;
+    const statusBarH = document.getElementById('status-bar').offsetHeight;
+    const offset = headerH + statusBarH + 8;
+    const y = card.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({top: y, behavior: 'smooth'});
     card.classList.add('highlight-pulse');
     card.addEventListener('animationend', () => card.classList.remove('highlight-pulse'), {once: true});
-  }));
+  }
+
+  if (wasOnBracket) {
+    // Already on bracket — just double rAF
+    requestAnimationFrame(() => requestAnimationFrame(scrollAndPulse));
+  } else {
+    // Switched views — bracket re-renders async, poll until element exists
+    let attempts = 0;
+    function tryFind() {
+      const card = document.querySelector(`.matchup[data-id="${CSS.escape(matchupId)}"]`);
+      if (card) {
+        scrollAndPulse();
+      } else if (attempts++ < 20) {
+        setTimeout(tryFind, 50);
+      }
+    }
+    setTimeout(tryFind, 50);
+  }
 }
 
 function matchupCardSearch(m) {
@@ -1693,14 +1766,31 @@ function doSearch(q) {
       const teams = teamsForOwner(owner);
       const entries = teams.map(t => teamEntryStatus(owner, t)).filter(Boolean);
       const overallStatus = ownerOverallStatus(owner);
-      const cardClass = overallStatus==='eliminated'?'eliminated':(overallStatus==='live'||overallStatus==='scheduled')?'alive-pending':'alive';
-      const pillClass = overallStatus==='eliminated'?'pill-out':(overallStatus==='live'||overallStatus==='scheduled')?'pill-pending':'pill-alive';
-      const pillText = overallStatus==='eliminated'?'Both Out':overallStatus==='live'?'🔴 Live':overallStatus==='scheduled'?'Upcoming':'Still Alive';
+      const cardClass = overallStatus==='eliminated'?'eliminated':'alive';
+      const pillClass = overallStatus==='eliminated'?'pill-out':overallStatus==='live'?'pill-pending':'pill-alive';
+      const pillText = overallStatus==='eliminated'?'Out':overallStatus==='live'?'🔴 Live':overallStatus==='scheduled'?'Alive':'Alive';
 
       let teamsHtml = '';
       entries.forEach(e => {
-        const statusColor = e.status==='eliminated'?'var(--red)':e.status==='alive'?'var(--green)':e.status==='live'?'var(--green)':'var(--muted)';
-        const roundLabel = e.status==='eliminated'?`Out in ${ROUNDS[e.latest.round]}`:e.status==='alive'?`Alive · ${ROUNDS[e.latest.round]} ✓`:e.status==='live'?`🔴 Live · ${ROUNDS[e.latest.round]}`:e.status==='scheduled'?`Upcoming · ${ROUNDS[e.latest.round]}`:`${ROUNDS[e.latest.round]}`;
+        const mSide2 = e.latest.topTeam===e.team?'top':'bot';
+        const scoreWon2 = e.latest.isFinal && e.latest.rawWinner===mSide2;
+        const sw2 = spreadOwnerWinner(e.latest);
+        const spreadCovered2 = e.latest.isFinal && sw2===mSide2;
+        let statusColor, roundLabel;
+        if (e.status==='live') {
+          statusColor='var(--green)'; roundLabel=`🔴 Live · ${ROUNDS[e.latest.round]}`;
+        } else if (e.status==='scheduled') {
+          statusColor='var(--yellow)'; roundLabel=`Upcoming · ${ROUNDS[e.latest.round]}`;
+        } else if (e.status==='eliminated') {
+          statusColor='var(--red)'; roundLabel=`Out in ${ROUNDS[e.latest.round]}`;
+        } else if (e.status==='alive') {
+          statusColor='var(--green)';
+          if (scoreWon2 && spreadCovered2) roundLabel=`Won · ${ROUNDS[e.latest.round]} ✓`;
+          else if (!scoreWon2 && spreadCovered2) roundLabel=`Covered · ${ROUNDS[e.latest.round]} ✓`;
+          else roundLabel=`Alive · ${ROUNDS[e.latest.round]} ✓`;
+        } else {
+          statusColor='var(--muted)'; roundLabel=`${ROUNDS[e.latest.round]}`;
+        }
         let nextHtml = '';
         if (e.nextM) {
           const oppSide = e.nextM.topTeam===e.team?'bot':'top';
@@ -1720,7 +1810,7 @@ function doSearch(q) {
           ${e.curSeed?`<span class="seed">${e.curSeed}</span>`:''}
           <div style="flex:1;min-width:0">
             <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px">
-              ${e.team}<span style="font-size:10px;color:var(--muted)">↗</span>
+              ${e.team}<span style="font-size:14px;color:var(--muted);opacity:.7">›</span>
             </div>
             <div style="font-size:11px;color:${statusColor}">${roundLabel}</div>${nextHtml}
           </div>
@@ -1840,8 +1930,14 @@ function toggleRules() {
   d.style.display = 'block';
 }
 
+const viewScrollPos = {bracket: 0, players: 0};
+
 function showView(v) {
   const wasAlready = currentView === v;
+  if (!wasAlready) {
+    // Save scroll position of the view we're leaving
+    viewScrollPos[currentView] = window.scrollY;
+  }
   currentView = v;
   document.getElementById('view-bracket').classList.toggle('active', v==='bracket');
   document.getElementById('view-players').classList.toggle('active', v==='players');
@@ -1849,6 +1945,8 @@ function showView(v) {
   if (!wasAlready) {
     if (v==='players') renderPlayersView('');
     else renderBracket(null);
+    // Restore saved scroll position for this view
+    requestAnimationFrame(() => window.scrollTo(0, viewScrollPos[v]));
   }
 }
 

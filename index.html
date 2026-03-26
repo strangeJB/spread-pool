@@ -94,8 +94,12 @@
   .bracket-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
 
   .rounds-scroll{overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;will-change:transform;}
-  .rounds-row{display:flex;gap:0;min-width:860px;align-items:stretch;}
-  .round-col{flex:1;min-width:138px;display:flex;flex-direction:column;}
+  .rounds-row{display:flex;gap:0;min-width:640px;align-items:stretch;}
+  .round-col{flex:1;min-width:110px;display:flex;flex-direction:column;}
+  .loser-rounds-row{display:flex;gap:0;align-items:stretch;}
+  .loser-rounds-row .round-col{min-width:90px;}
+  .loser-rounds-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}
+  
   .round-header{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;padding:8px 10px 6px;text-align:center;}
   .round-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);}
   .round-dates{font-size:11px;color:var(--muted);margin-top:2px;}
@@ -127,7 +131,9 @@
   .matchup-team.advances .team-name{font-weight:700;color:var(--accent) !important;}
 
   /* Hamburger button */
-  .hamburger{-webkit-appearance:none;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;flex-shrink:0;transition:color .15s,border-color .15s;}
+  .hamburger{-webkit-appearance:none;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;flex-shrink:0;transition:border-color .15s;display:inline-flex;align-items:center;justify-content:center;}
+  .hamburger .hbball{display:inline-block;transition:transform .4s cubic-bezier(.68,-.55,.27,1.55);}
+  .hamburger.menu-open .hbball{transform:rotate(360deg);}
   .hamburger:hover{color:var(--text);border-color:var(--border2);}
 
   /* Drawer */
@@ -141,7 +147,12 @@
   .drawer-item:hover{background:var(--bg3);}
 
   /* Loser's Bracket full-page overlay */
-  #loser-page{background:var(--bg);bottom:0;display:flex;flex-direction:column;left:0;position:fixed;right:0;top:0;transform:translateX(100%);transition:transform .3s ease;z-index:400;}
+  #nav-menu{position:fixed;inset:0;z-index:1000;pointer-events:none;opacity:0;transition:opacity .25s ease;}
+  #nav-menu.open{pointer-events:auto;opacity:1;}
+  #nav-menu .nav-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+  #nav-menu .nav-panel{position:absolute;top:0;left:0;bottom:0;width:240px;background:#161b22;border-right:1px solid rgba(255,255,255,0.1);padding:24px 0;display:flex;flex-direction:column;gap:0;transform:translateX(-100%);transition:transform .25s ease;}
+  #nav-menu.open .nav-panel{transform:translateX(0);}
+      #loser-page{background:var(--bg);bottom:0;display:flex;flex-direction:column;left:0;position:fixed;right:0;top:0;transform:translateX(100%);transition:transform .3s ease;z-index:400;}
   #loser-page.open{transform:translateX(0);}
   #loser-page-header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;padding:10px 16px 0;}
   .loser-header-inner{align-items:center;display:flex;flex-wrap:wrap;gap:10px;max-width:1400px;margin:0 auto;padding-bottom:10px;}
@@ -186,9 +197,11 @@
 
   @media(max-width:600px){
     .tab{font-size:11px;padding:4px 8px;}
-    .logo{font-size:17px;}
-    .search-wrap{max-width:100%;width:100%;}
+    .logo{display:none;}
+    .search-wrap{flex:1;min-width:0;max-width:100%;}
     .players-grid{grid-template-columns:1fr;}
+    .header-inner{flex-wrap:wrap;}
+    .tab-bar{margin-left:0;width:100%;}
   }
 
   #loading-screen{position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease;}
@@ -221,15 +234,9 @@
 
 <header>
   <div class="header-inner">
-    <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu" id="hamburger-btn">☰</button>
-    <div class="logo">🏀 2026 March Madness Spread Pool</div>
-    <div style="position:relative;flex-shrink:0">
-      <button class="tab" onclick="toggleRules()" id="rules-btn" style="font-size:16px;padding:3px 10px;letter-spacing:0" title="Rules">···</button>
-      <div id="rules-dropdown" style="display:none;position:absolute;right:0;top:0;width:290px;background:#161b22;border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:12px 14px;font-size:12px;color:#8b949e;line-height:1.6;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.6)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:13px;margin-bottom:6px">How it works</div>
-        If the underdog loses by <em>less</em> than the spread (or wins outright), the underdog's owner advances — riding the winning team going forward. All ties go to the underdog.
-      </div>
-    </div>
+    <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu" id="hamburger-btn"><span class="hbball">🏀</span></button>
+    <div class="logo">2026 March Madness Spread Pool</div>
+
     <div class="search-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
@@ -266,7 +273,7 @@
 <div id="loser-page">
   <div id="loser-page-header">
     <div class="loser-header-inner">
-      <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu">☰</button>
+      <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu"><span class="hbball">🏀</span></button>
       <div class="loser-title">Loser's Bracket</div>
       <div class="loser-search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1837,7 +1844,7 @@ function renderLoserBracket() {
   const regions = ['East','South','West','Midwest'];
   regions.forEach(region => {
     const rMs = LOSER_MATCHUPS.filter(m => m.region===region);
-    html += `<div class="region-lbl">${region} Region</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row">`;
+    html += `<div class="region-lbl">${region} Region</div><div class="loser-rounds-scroll"><div class="loser-rounds-row">`;
     for (let r = 2; r <= 3; r++) {
       const ms = rMs.filter(m => m.round===r);
       html += `<div class="round-col"><div class="round-header"><div class="round-name">${ROUNDS[r]}</div><div class="round-dates">${ROUND_DATES[r]}</div></div><div class="matchups-col">`;
@@ -1850,7 +1857,7 @@ function renderLoserBracket() {
   // Final Four + Championship
   const ff = LOSER_MATCHUPS.filter(m => m.round===4);
   const ch = LOSER_MATCHUPS.filter(m => m.round===5);
-  html += `<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row" style="min-width:300px">`;
+  html += `<div class="region-lbl">Final Four &amp; Championship</div><div class="loser-rounds-scroll"><div class="loser-rounds-row">`;
   html += `<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
   ff.forEach(m => { html += matchupHtml(m, null); });
   html += `</div></div>`;
@@ -2397,17 +2404,15 @@ function closeLoserPage() {
 }
 
 function toggleRules() {
-  const btn = document.getElementById('rules-btn');
   const d = document.getElementById('rules-dropdown');
   if (d.style.display !== 'none') {
     d.style.display = 'none';
     return;
   }
-  // Position using fixed coords so it never affects layout
-  const rect = btn.getBoundingClientRect();
-  d.style.position = 'fixed';
-  d.style.top = (rect.bottom + 6) + 'px';
-  d.style.right = (window.innerWidth - rect.right) + 'px';
+  closeMenu();
+  // Position in centre of viewport
+  d.style.left = Math.max(12, (window.innerWidth - 290) / 2) + 'px';
+  d.style.top = Math.max(12, (window.innerHeight - 160) / 2) + 'px';
   d.style.display = 'block';
 }
 
@@ -2428,16 +2433,17 @@ function switchPage(page) {
 
 function toggleMenu() {
   const m = document.getElementById('nav-menu');
-  const isOpen = m.style.display !== 'none';
+  const isOpen = m.classList.contains('open');
   if (!isOpen) {
-    // Update highlights before showing
     document.getElementById('menu-main').style.color = currentPage==='main' ? 'var(--accent)' : 'var(--text)';
     document.getElementById('menu-loser').style.color = currentPage==='loser' ? 'var(--accent)' : 'var(--muted)';
   }
-  m.style.display = isOpen ? 'none' : 'block';
+  m.classList.toggle('open', !isOpen);
+  document.querySelectorAll('.hamburger').forEach(b => b.classList.toggle('menu-open', !isOpen));
 }
 function closeMenu() {
-  document.getElementById('nav-menu').style.display = 'none';
+  document.getElementById('nav-menu').classList.remove('open');
+  document.querySelectorAll('.hamburger').forEach(b => b.classList.remove('menu-open'));
 }
 
 function doLoserSearch(q) {
@@ -2573,8 +2579,8 @@ document.getElementById('loser-search-results').addEventListener('click',e=>{if(
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeLoserSearch();closeMenu();document.getElementById('rules-dropdown').style.display='none';}});
 document.addEventListener('click',e=>{
-  if(!document.getElementById('rules-btn')?.contains(e.target)){document.getElementById('rules-dropdown').style.display='none';}
-  if(!document.getElementById('nav-menu')?.contains(e.target)&&![...document.querySelectorAll('.hamburger')].some(b=>b.contains(e.target))){closeMenu();}
+  if(!document.getElementById('rules-btn')?.contains(e.target)&&!document.getElementById('rules-dropdown')?.contains(e.target)){document.getElementById('rules-dropdown').style.display='none';}
+  if(!document.getElementById('nav-menu')?.contains(e.target)&&![...document.querySelectorAll('.hamburger')].some(b=>b.contains(e.target))&&document.getElementById('nav-menu')?.classList.contains('open')){closeMenu();}
 });
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
@@ -2608,9 +2614,9 @@ hideLoadingScreen();
 fetchAndRender();
 </script>
 </div>
-<div id="nav-menu" style="display:none;position:fixed;inset:0;z-index:1000">
-  <div onclick="closeMenu()" style="position:absolute;inset:0;background:rgba(0,0,0,.6)"></div>
-  <div style="position:absolute;top:0;left:0;bottom:0;width:240px;background:#161b22;border-right:1px solid rgba(255,255,255,0.1);padding:24px 0;display:flex;flex-direction:column;gap:0">
+<div id="nav-menu">
+  <div class="nav-backdrop" onclick="closeMenu()"></div>
+  <div class="nav-panel">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0 20px 12px">Navigate</div>
     <button id="menu-main" onclick="switchPage('main')" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--text);text-align:left;width:100%;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
       🏀 <span>Main Bracket</span>
@@ -2618,7 +2624,15 @@ fetchAndRender();
     <button id="menu-loser" onclick="switchPage('loser')" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--muted);text-align:left;width:100%;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
       🗑️ <span>Loser's Bracket</span>
     </button>
+    <div style="border-top:1px solid rgba(255,255,255,0.07);margin:8px 0"></div>
+    <button id="rules-btn" onclick="toggleRules()" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 20px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:500;color:var(--muted);text-align:left;width:100%;transition:background .15s;letter-spacing:0" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
+      ℹ️ <span>How it works</span>
+    </button>
   </div>
+</div>
+<div id="rules-dropdown" style="display:none;position:fixed;width:290px;background:#161b22;border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:12px 14px;font-size:12px;color:#8b949e;line-height:1.6;z-index:1100;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:13px;margin-bottom:6px">How it works</div>
+  If the underdog loses by <em>less</em> than the spread (or wins outright), the underdog's owner advances — riding the winning team going forward. All ties go to the underdog.
 </div>
 </body>
 </html>

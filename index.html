@@ -30,10 +30,10 @@
   body{background:#0d1117;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;}
 
   header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;-webkit-backdrop-filter:none;}
-  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;}
   .logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .logo span{color:var(--text);font-weight:400;}
-  .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;}
+  .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;flex:1;min-width:0;}
   .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
   #search{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
   #search::placeholder{color:var(--muted);}
@@ -90,7 +90,7 @@
 
   #view-bracket,#view-players{display:none;}
   #view-bracket.active,#view-players.active{display:block;}
-  .view-wrap{max-width:1400px;margin:0 auto;padding:20px 12px;}
+  .view-wrap{max-width:1400px;margin:0 auto;padding:8px 12px;}
   .bracket-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
 
   .rounds-scroll{overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;will-change:transform;}
@@ -124,8 +124,37 @@
   .win-check{color:var(--green);font-size:11px;}
   .matchup-team.covered .team-name{color:var(--muted);}
   .matchup-team.covered .owner-name{color:var(--accent);font-style:italic;}
+  .matchup-team.advances .team-name{font-weight:700;color:var(--accent) !important;}
 
-  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  /* Hamburger button */
+  .hamburger{-webkit-appearance:none;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;flex-shrink:0;transition:color .15s,border-color .15s;}
+  .hamburger:hover{color:var(--text);border-color:var(--border2);}
+
+  /* Drawer */
+  #drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;}
+  #drawer-overlay.open{display:block;}
+  #drawer{background:#161b22;border-right:1px solid rgba(255,255,255,0.08);bottom:0;box-shadow:4px 0 24px rgba(0,0,0,.5);display:flex;flex-direction:column;left:0;position:fixed;top:0;transform:translateX(-100%);transition:transform .25s ease;width:240px;z-index:501;}
+  #drawer.open{transform:translateX(0);}
+  #drawer-header{align-items:center;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;padding:16px;}
+  #drawer-body{padding:8px;}
+  .drawer-item{-webkit-appearance:none;background:none;border:none;border-radius:8px;color:var(--text);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;padding:12px 14px;text-align:left;transition:background .15s;width:100%;}
+  .drawer-item:hover{background:var(--bg3);}
+
+  /* Loser's Bracket full-page overlay */
+  #loser-page{background:var(--bg);bottom:0;display:flex;flex-direction:column;left:0;position:fixed;right:0;top:0;transform:translateX(100%);transition:transform .3s ease;z-index:400;}
+  #loser-page.open{transform:translateX(0);}
+  #loser-page-header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;padding:10px 16px 0;}
+  .loser-header-inner{align-items:center;display:flex;flex-wrap:wrap;gap:10px;max-width:1400px;margin:0 auto;padding-bottom:10px;}
+  .loser-back{-webkit-appearance:none;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;padding:4px 12px;transition:color .15s,border-color .15s;flex-shrink:0;}
+  .loser-back:hover{color:var(--text);border-color:var(--border2);}
+  .loser-title{color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;white-space:nowrap;}
+  .loser-search-wrap{flex:1;min-width:160px;max-width:380px;position:relative;}
+  .loser-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .loser-search-wrap input{background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;padding:6px 12px 6px 32px;width:100%;box-sizing:border-box;outline:none;transition:border-color .15s;}
+  .loser-search-wrap input:focus{border-color:var(--accent);}
+  #loser-page-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  #loser-search-results{display:none;position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.75);z-index:10;padding:80px 16px 16px;overflow-y:auto;}
+  #loser-search-results.visible{display:block;}
   .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border-color .15s;}
   .pcard:hover{border-color:var(--border2);}
   .pcard.alive{border-left:3px solid var(--green);}
@@ -192,6 +221,7 @@
 
 <header>
   <div class="header-inner">
+    <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu" id="hamburger-btn">☰</button>
     <div class="logo">🏀 2026 March Madness Spread Pool</div>
     <div style="position:relative;flex-shrink:0">
       <button class="tab" onclick="toggleRules()" id="rules-btn" style="font-size:16px;padding:3px 10px;letter-spacing:0" title="Rules">···</button>
@@ -217,6 +247,56 @@
     <span id="status-text">Loading…</span>
     <span id="last-updated"></span>
     <button class="refresh-btn" id="refresh-btn" onclick="fetchAndRender(true)"><span class="bball">↻ Refresh</span><span class="bball-anim">🏀</span></button>
+  </div>
+</div>
+
+<!-- ── Hamburger Drawer ── -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div id="drawer-header">
+    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text)">Menu</span>
+    <button onclick="closeDrawer()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px">✕</button>
+  </div>
+  <div id="drawer-body">
+    <button class="drawer-item" onclick="closeDrawer();openLoserPage()">🏀 Loser's Bracket</button>
+  </div>
+</div>
+
+<!-- ── Loser's Bracket Page ── -->
+<div id="loser-page">
+  <div id="loser-page-header">
+    <div class="loser-header-inner">
+      <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu">☰</button>
+      <div class="loser-title">Loser's Bracket</div>
+      <div class="loser-search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="loser-search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
+      </div>
+      <div class="tab-bar">
+        <button class="tab active" id="loser-sub-bracket" onclick="showLoserSubView('bracket')">Bracket</button>
+        <button class="tab" id="loser-sub-players" onclick="showLoserSubView('players')">Players</button>
+      </div>
+    </div>
+  </div>
+  <div id="loser-search-results">
+    <div class="sr-box">
+      <div class="sr-close">
+        <h2 id="loser-sr-title">Results</h2>
+        <button onclick="closeLoserSearch()">✕</button>
+      </div>
+      <div id="loser-sr-body"></div>
+    </div>
+  </div>
+  <div id="loser-page-body">
+    <div id="loser-status-bar" class="sb-inner" style="background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;display:flex;align-items:center;gap:8px;">
+      <div class="status-dot" id="loser-status-dot"></div>
+      <span id="loser-status-text">Loading…</span>
+      <span style="flex:1"></span>
+      <button class="refresh-btn" onclick="fetchAndRender(true)"><span class="bball">↻ Refresh</span><span class="bball-anim">🏀</span></button>
+    </div>
+    <div class="view-wrap">
+      <div id="loser-bracket-container"><div class="empty-msg">Loading…</div></div>
+    </div>
   </div>
 </div>
 
@@ -263,6 +343,8 @@
   <div class="loading-sub">Loading bracket…</div>
 </div>
 <div id="page-body">
+
+
 <div id="search-results">
   <div class="sr-box">
     <div class="sr-close">
@@ -275,7 +357,6 @@
 
 <div id="view-bracket" class="active">
   <div class="view-wrap">
-
     <div id="bracket-container"><div class="empty-msg">Loading…</div></div>
   </div>
 </div>
@@ -283,6 +364,8 @@
 <div id="view-players">
   <div class="view-wrap"><div id="players-container"></div></div>
 </div>
+
+
 
 <script>
 // ─── OWNER MAP ────────────────────────────────────────────────────────────────
@@ -294,10 +377,10 @@ const OWNER_MAP = {
   'TCU':              {owner:'Jake',    seed:9,  region:'East'},
   "St. John's":       {owner:'Brian P', seed:5,  region:'East'},
   'Northern Iowa':    {owner:'Steph',   seed:12, region:'East'},
-  'Kansas':           {owner:'Lori',    seed:4,  region:'East'},
+  'Kansas':           {owner:'Lori/Henry',    seed:4,  region:'East'},
   'Cal Baptist':      {owner:'Alan',    seed:13, region:'East'},
   'Louisville':       {owner:'Nick',    seed:6,  region:'East'},
-  'South Florida':    {owner:'Jon',     seed:11, region:'East'},
+  'South Florida':    {owner:'David/Caroline',     seed:11, region:'East'},
   'Michigan St.':     {owner:'Brian T', seed:3,  region:'East'},
   'North Dakota St.': {owner:'Mike F',  seed:14, region:'East'},
   'UCLA':             {owner:'Morgan',  seed:7,  region:'East'},
@@ -316,11 +399,11 @@ const OWNER_MAP = {
   'North Carolina':   {owner:'Troy',    seed:6,  region:'South'},
   'VCU':              {owner:'Cassie',  seed:11, region:'South'},
   'Illinois':         {owner:'Josh',    seed:3,  region:'South'},
-  'Penn':             {owner:'Henry',   seed:14, region:'South'},
+  'Penn':             {owner:'Morgan',   seed:14, region:'South'},
   "Saint Mary's":     {owner:'Caroline',seed:7,  region:'South'},
   'Texas A&M':        {owner:'Abi',     seed:10, region:'South'},
   'Houston':          {owner:'Jonathon',seed:2,  region:'South'},
-  'Idaho':            {owner:'Amy',     seed:15, region:'South'},
+  'Idaho':            {owner:'Amy/Jon',     seed:15, region:'South'},
   // West
   'Arizona':          {owner:'Morgan',  seed:1,  region:'West'},
   'Long Island':      {owner:'Boris',   seed:16, region:'West'},
@@ -334,15 +417,15 @@ const OWNER_MAP = {
   'Texas':            {owner:'Ron',     seed:11, region:'West'},
   'Gonzaga':          {owner:'Brian T', seed:3,  region:'West'},
   'Kennesaw St.':     {owner:'Nick',    seed:14, region:'West'},
-  'Miami (FL)':       {owner:'Jon',     seed:7,  region:'West'},
-  'Missouri':         {owner:'Amy',     seed:10, region:'West'},
+  'Miami (FL)':       {owner:'David/Caroline',     seed:7,  region:'West'},
+  'Missouri':         {owner:'Amy/Jon',     seed:10, region:'West'},
   'Purdue':           {owner:'Mike F',  seed:2,  region:'West'},
   "Queens (N.C.)":    {owner:'Steph',   seed:15, region:'West'},
   // Midwest
   'Michigan':         {owner:'Callie',  seed:1,  region:'Midwest'},
   'Howard':           {owner:'Ethan',   seed:16, region:'Midwest'},
-  'Saint Louis':      {owner:'Henry',   seed:8,  region:'Midwest'},
-  'Georgia':          {owner:'Lori',    seed:9,  region:'Midwest'},
+  'Saint Louis':      {owner:'Morgan',   seed:8,  region:'Midwest'},
+  'Georgia':          {owner:'Lori/Henry',    seed:9,  region:'Midwest'},
   'Texas Tech':       {owner:'Becca',   seed:5,  region:'Midwest'},
   'Akron':            {owner:'Abi',     seed:12, region:'Midwest'},
   'Alabama':          {owner:'Brian P', seed:4,  region:'Midwest'},
@@ -479,7 +562,136 @@ const SWEET16_DATA = [
   {top:'Iowa St.',    bot:'Tennessee',   spread:4.5,  region:'Midwest', gameDate:'2026-03-28T03:10:00Z'},
 ];
 
-// ─── FALLBACK DATA ─────────────────────────────────────────────────────────
+// ─── LOSER'S BRACKET ──────────────────────────────────────────────────────────
+// Starts at Sweet 16 with a separate group of owners assigned to the 16 teams
+const LOSER_OWNER_MAP = {
+  'Illinois':    {owner:'Steph',  seed:3,  region:'South'},
+  "St. John's":  {owner:'Eric',   seed:5,  region:'East'},
+  'Iowa':        {owner:'Amy/Jon',    seed:9,  region:'South'},
+  'Houston':     {owner:'David/Caroline',    seed:2,  region:'South'},
+  'Iowa St.':    {owner:'Lori/Henry',   seed:2,  region:'Midwest'},
+  'UConn':       {owner:'Morgan',  seed:2,  region:'East'},
+  'Michigan':    {owner:'Callie', seed:1,  region:'Midwest'},
+  'Duke':        {owner:'Nick',   seed:1,  region:'East'},
+  'Texas':       {owner:'Becca',  seed:11, region:'West'},
+  'Arizona':     {owner:'Boris',  seed:1,  region:'West'},
+  'Alabama':     {owner:'Jake',   seed:4,  region:'Midwest'},
+  'Tennessee':   {owner:'Abi',    seed:6,  region:'Midwest'},
+  'Nebraska':    {owner:'Rachel', seed:4,  region:'South'},
+  'Michigan St.':{owner:'Cassie', seed:3,  region:'East'},
+  'Purdue':      {owner:'Tim',    seed:2,  region:'West'},
+  'Arkansas':    {owner:'Troy',   seed:4,  region:'West'},
+};
+
+// Build Loser's Bracket matchups from Sweet 16 onward
+// Uses the same SWEET16_DATA games but with LOSER_OWNER_MAP assignments
+function buildLoserMatchups() {
+  let placeholderIdx = 1000; // offset to avoid ID collisions with main bracket
+  const matchups = [];
+
+  function loserOwnerInfo(name) {
+    return LOSER_OWNER_MAP[name] || null;
+  }
+
+  // Seed the 8 Sweet 16 games as round 2 (matching main bracket rounds)
+  for (const s of SWEET16_DATA) {
+    const topO = loserOwnerInfo(s.top);
+    const botO = loserOwnerInfo(s.bot);
+    matchups.push({
+      id: `loser_s16_${placeholderIdx++}`,
+      bracketPos: placeholderIdx,
+      round: 2, region: s.region,
+      topTeam: s.top,   topOwner: topO?.owner ?? null, topSeed: topO?.seed ?? null, topScore: null,
+      botTeam: s.bot,   botOwner: botO?.owner ?? null, botSeed: botO?.seed ?? null, botScore: null,
+      spread: s.spread, gameDate: s.gameDate,
+      rawWinner: null, isLive: false, isFinal: false, isPending: true,
+      isTBD: false, isDerived: false, clock: '', period: 0,
+    });
+  }
+
+  // Sort by region then bracketPos for consistent ordering
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5};
+  matchups.sort((a,b) => (ro[a.region]??6)-(ro[b.region]??6));
+
+  // Now derive Elite 8, Final Four, Championship using same logic as main bracket
+  return deriveLoserSlots(matchups);
+}
+
+function deriveLoserSlots(matchups) {
+  let pidx = 2000;
+  const ro = {East:0, South:1, West:2, Midwest:3, FinalFour:4, Championship:5};
+
+  function advancingTeam(m) {
+    if (!m.isFinal || m.rawWinner === null) return null;
+    const scoreWinner = m.rawWinner;
+    const margin = (m.topScore??0) - (m.botScore??0);
+    let spreadWinner;
+    if (m.spread === null) spreadWinner = scoreWinner;
+    else if (m.spread > 0) spreadWinner = margin > m.spread ? 'top' : 'bot';
+    else spreadWinner = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+    return {
+      team:  scoreWinner==='top' ? m.topTeam : m.botTeam,
+      owner: spreadWinner==='top' ? m.topOwner : m.botOwner,
+      seed:  scoreWinner==='top' ? m.topSeed  : m.botSeed,
+    };
+  }
+
+  function makeSlot(region, round, mA, mB, idx) {
+    const adA = mA ? advancingTeam(mA) : null;
+    const adB = mB ? advancingTeam(mB) : null;
+    const top = adA || {team:'TBD', owner:null, seed:null};
+    const bot = adB || {team:'TBD', owner:null, seed:null};
+    const feederPos = Math.min(mA?.bracketPos??9999, mB?.bracketPos??9999);
+    return {
+      id: `loser_derived_${region}_${round}_${idx}_${pidx++}`,
+      bracketPos: feederPos,
+      round, region,
+      topTeam: top.team, topOwner: top.owner, topSeed: top.seed, topScore: null,
+      botTeam: bot.team, botOwner: bot.owner, botSeed: bot.seed, botScore: null,
+      spread: null, rawWinner: null, isLive: false, isFinal: false, isPending: false,
+      isTBD: top.team==='TBD' && bot.team==='TBD',
+      isDerived: true, clock: '', period: 0,
+    };
+  }
+
+  // Elite 8 (round 3) — derive from Sweet 16 pairs
+  for (const region of ['East','South','West','Midwest']) {
+    const prev = matchups
+      .filter(m => m.region===region && m.round===2)
+      .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
+    if (prev.length >= 2) {
+      // Update owners from spread-pool results
+      const ownerByTeam = {};
+      for (const m of prev) {
+        const adv = advancingTeam(m);
+        if (adv && adv.team !== 'TBD') ownerByTeam[adv.team] = adv;
+      }
+      const slot = makeSlot(region, 3, prev[0], prev[1], 0);
+      matchups.push(slot);
+    }
+  }
+
+  // Final Four (round 4)
+  const e8 = {};
+  for (const r of ['East','South','West','Midwest']) {
+    e8[r] = matchups.find(m => m.region===r && m.round===3);
+  }
+  matchups.push(makeSlot('FinalFour', 4, e8.East,  e8.West,    0));
+  matchups.push(makeSlot('FinalFour', 4, e8.South, e8.Midwest, 1));
+
+  // Championship (round 5)
+  const ff = matchups.filter(m => m.round===4);
+  matchups.push(makeSlot('Championship', 5, ff[0], ff[1], 0));
+
+  matchups.sort((a,b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    if ((ro[a.region]??6) !== (ro[b.region]??6)) return (ro[a.region]??6)-(ro[b.region]??6);
+    return (a.bracketPos??9999)-(b.bracketPos??9999);
+  });
+  return matchups;
+}
+
+let LOSER_MATCHUPS = buildLoserMatchups();
 // Known results through Second Round (Mar 19–22).
 // The app will layer live API data on top of this; this ensures the bracket
 // is never empty even if the API is unavailable.
@@ -1242,19 +1454,18 @@ let usingLive = false;
 let currentView = 'bracket';
 let refreshTimer = null;
 
-function teamRow(seed, team, owner, isScoreWinner, isSpreadWinner, isElim, isCovered, hl, score, leading, showScore) {
+function teamRow(seed, team, owner, isScoreWinner, isSpreadWinner, isElim, isCovered, isAdvances, hl, score, leading, showScore) {
   const ec = isElim ? ' elim' : '';
   const covClass = isCovered ? ' covered' : '';
+  const advClass = isAdvances ? ' advances' : '';
   const oc = owner && hl && owner.toLowerCase() === hl.toLowerCase() ? ' hl' : '';
   const seedH = seed ? `<span class="seed">${seed}</span>` : `<span class="seed" style="opacity:.3">?</span>`;
   const scoreH = showScore && score !== null ? `<span class="score-box${leading?' lead':''}">${score}</span>` : '';
-  // Team name gets ✓ if they won the game outright
   const teamChk = isScoreWinner ? ' <span class="win-check">✓</span>' : '';
-  // Owner name gets ✓ if their side covered the spread
   const ownerChk = isSpreadWinner ? ' <span class="win-check" style="font-size:10px">✓</span>' : '';
   const teamHtml = `<div class="team-name">${team||'TBD'}${teamChk}</div>`;
   const ownerHtml = owner ? `<div class="owner-name${oc}">${owner}${ownerChk}</div>` : '';
-  return `<div class="matchup-team${ec}${covClass}">${seedH}<div class="team-info">${teamHtml}${ownerHtml}</div>${scoreH}</div>`;
+  return `<div class="matchup-team${ec}${covClass}${advClass}">${seedH}<div class="team-info">${teamHtml}${ownerHtml}</div>${scoreH}</div>`;
 }
 
 // Format ISO date string → "Thu Mar 19, 7:10 PM" (user's local time)
@@ -1324,8 +1535,12 @@ function matchupHtml(m, hl) {
   const topScoreWin = m.isFinal && m.rawWinner==='top';
   const botScoreWin = m.isFinal && m.rawWinner==='bot';
   // covered = lost outright but covered spread (owner advances)
-  const topCovered = m.isFinal && botScoreWin && topSpreadWin;
-  const botCovered = m.isFinal && topScoreWin && botSpreadWin;
+  const topCovered  = m.isFinal && botScoreWin && topSpreadWin;
+  const botCovered  = m.isFinal && topScoreWin && botSpreadWin;
+  // "advances" = score winner when the OTHER side (underdog) covered — highlight this team
+  // since it's moving forward despite the owner on their side being eliminated
+  const topAdvances = m.isFinal && topScoreWin && botSpreadWin; // top won, bot's owner advances
+  const botAdvances = m.isFinal && botScoreWin && topSpreadWin; // bot won, top's owner advances
   const topElim = m.isFinal && !topSpreadWin;
   const botElim = m.isFinal && !botSpreadWin;
   const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
@@ -1346,9 +1561,7 @@ function matchupHtml(m, hl) {
       <span style="font-size:10px;color:rgba(63,185,80,.7);font-family:'Barlow',sans-serif">updates every 15s</span>
     </div>`;
   } else if (m.isPending) {
-    topBanner = `<div style="background:rgba(210,153,34,.08);border-bottom:1px solid rgba(210,153,34,.2);display:flex;align-items:center;gap:5px;padding:3px 8px">
-      <span class="pending-badge">Upcoming</span>
-    </div>`;
+    topBanner = '';
   }
 
   const showScore = m.isLive || m.isFinal;
@@ -1356,11 +1569,11 @@ function matchupHtml(m, hl) {
   return `<div class="matchup${m.isLive?' live-game':''}${m.isPending?' pending-game':''}" data-id="${m.id}">
     ${topBanner}
     <div class="matchup-spread" style="flex-direction:column;align-items:stretch">
-      <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span>${spreadLabel(m)}</span>${m.isPending ? `<span class="pending-badge">Upcoming</span>` : ''}</div>
       ${timeHtml}
     </div>
-    ${teamRow(m.topSeed,m.topTeam,m.topOwner,topScoreWin,topSpreadWin,topElim,topCovered,hl,m.topScore,topLead,showScore)}
-    ${teamRow(m.botSeed,m.botTeam,m.botOwner,botScoreWin,botSpreadWin,botElim,botCovered,hl,m.botScore,botLead,showScore)}
+    ${teamRow(m.topSeed,m.topTeam,m.topOwner,topScoreWin,topSpreadWin,topElim,topCovered,topAdvances,hl,m.topScore,topLead,showScore)}
+    ${teamRow(m.botSeed,m.botTeam,m.botOwner,botScoreWin,botSpreadWin,botElim,botCovered,botAdvances,hl,m.botScore,botLead,showScore)}
   </div>`;
 }
 
@@ -1616,10 +1829,191 @@ function renderPlayersView(filter) {
   c.innerHTML = html;
 }
 
+// ─── LOSER'S BRACKET RENDER ───────────────────────────────────────────────────
+function renderLoserBracket() {
+  const c = document.getElementById('loser-bracket-container');
+  let html = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 0 12px">Loser's Bracket · Sweet 16 onward</div>`;
 
+  const regions = ['East','South','West','Midwest'];
+  regions.forEach(region => {
+    const rMs = LOSER_MATCHUPS.filter(m => m.region===region);
+    html += `<div class="region-lbl">${region} Region</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row">`;
+    for (let r = 2; r <= 3; r++) {
+      const ms = rMs.filter(m => m.round===r);
+      html += `<div class="round-col"><div class="round-header"><div class="round-name">${ROUNDS[r]}</div><div class="round-dates">${ROUND_DATES[r]}</div></div><div class="matchups-col">`;
+      ms.forEach(m => { html += matchupHtml(m, null); });
+      html += `</div></div>`;
+    }
+    html += `</div></div>`;
+  });
 
+  // Final Four + Championship
+  const ff = LOSER_MATCHUPS.filter(m => m.round===4);
+  const ch = LOSER_MATCHUPS.filter(m => m.round===5);
+  html += `<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row" style="min-width:300px">`;
+  html += `<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
+  ff.forEach(m => { html += matchupHtml(m, null); });
+  html += `</div></div>`;
+  html += `<div class="round-col"><div class="round-header"><div class="round-name">Championship</div><div class="round-dates">Apr 6</div></div><div class="matchups-col">`;
+  ch.forEach(m => { html += matchupHtml(m, null); });
+  html += `</div></div></div></div>`;
 
-// Navigate to an owner's latest matchup in the bracket, highlight it
+  c.innerHTML = html;
+
+  // Sync horizontal scroll across loser bracket regions
+  const scrollers = c.querySelectorAll('[data-bracket-scroll]');
+  let isSyncing = false;
+  scrollers.forEach(el => {
+    el.addEventListener('scroll', () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      scrollers.forEach(other => { if (other !== el) other.scrollLeft = el.scrollLeft; });
+      isSyncing = false;
+    }, {passive: true});
+  });
+}
+
+function renderLoserPlayersView() {
+  const c = document.getElementById('loser-bracket-container');
+  const allOwners = [...new Set(Object.values(LOSER_OWNER_MAP).map(o => o.owner))].sort();
+  let html = `<div class="players-grid">`;
+
+  allOwners.forEach(owner => {
+    // Find all teams this owner has in LOSER_MATCHUPS
+    const myTeams = new Set();
+    for (const m of LOSER_MATCHUPS) {
+      if (m.isTBD) continue;
+      if (m.topOwner === owner && m.topTeam !== 'TBD') myTeams.add(m.topTeam);
+      if (m.botOwner === owner && m.botTeam !== 'TBD') myTeams.add(m.botTeam);
+    }
+
+    const entries = [...myTeams].map(team => {
+      // Find latest NON-DERIVED matchup for this owner+team in LOSER_MATCHUPS
+      // Derived slots are TBD placeholders and should not affect status
+      const mine = LOSER_MATCHUPS.filter(m =>
+        !m.isTBD && !m.isDerived && (
+          (m.topTeam === team && m.topOwner === owner) ||
+          (m.botTeam === team && m.botOwner === owner)
+        )
+      ).sort((a,b) => a.round - b.round);
+      if (!mine.length) return null;
+      const latest = mine[mine.length - 1];
+      const side = latest.topTeam === team ? 'top' : 'bot';
+      const sw = spreadOwnerWinner(latest);
+      let status;
+      if (latest.isLive) status = 'live';
+      else if (!latest.isFinal && !latest.isPending) status = 'tbd';
+      else if (!latest.isFinal) status = 'scheduled';
+      else status = sw === side ? 'alive' : 'eliminated';
+
+      // Check if owner continued to later round with different team
+      if (status === 'alive') {
+        const later = LOSER_MATCHUPS.filter(m =>
+          !m.isTBD && m.round > latest.round &&
+          ((m.topOwner===owner && m.topTeam!==team)||(m.botOwner===owner && m.botTeam!==team))
+        );
+        if (later.length > 0 && later.every(m => {
+          if (!m.isFinal) return false;
+          const ls = m.topOwner===owner ? 'top' : 'bot';
+          return spreadOwnerWinner(m) !== ls;
+        })) status = 'eliminated';
+      }
+
+      const mSide = latest.topTeam===team?'top':'bot';
+      const scoreWon = latest.isFinal && latest.rawWinner===mSide;
+      const spreadCovered = latest.isFinal && sw===mSide;
+      let statusColor, rowLabel;
+      if (status==='live') { statusColor='var(--green)'; rowLabel=`🔴 Live · ${ROUNDS[latest.round]}`; }
+      else if (status==='scheduled') { statusColor='var(--yellow)'; rowLabel=`Upcoming · ${ROUNDS[latest.round]}`; }
+      else if (status==='eliminated') { statusColor='var(--red)'; rowLabel=`Out in ${ROUNDS[latest.round]}`; }
+      else if (status==='alive') {
+        statusColor='var(--green)';
+        rowLabel = scoreWon && spreadCovered ? `Won · ${ROUNDS[latest.round]} ✓`
+          : !scoreWon && spreadCovered ? `Covered · ${ROUNDS[latest.round]} ✓`
+          : `Alive · ${ROUNDS[latest.round]} ✓`;
+      } else { statusColor='var(--muted)'; rowLabel=ROUNDS[latest.round]; }
+
+      const curSeed = side==='top' ? latest.topSeed : latest.botSeed;
+      const safeId = latest.id.replace(/'/g,"\\'");
+      return { team, status, statusColor, rowLabel, curSeed, safeId };
+    }).filter(Boolean);
+
+    const overallStatus = entries.some(e=>e.status==='live') ? 'live'
+      : entries.some(e=>e.status==='scheduled'||e.status==='alive'||e.status==='tbd') ? 'alive'
+      : 'eliminated';
+    const cardClass = overallStatus==='eliminated' ? 'out' : 'alive';
+    const avClass = `av-${cardClass}`;
+    const pillClass = overallStatus==='eliminated' ? 'pill-out' : overallStatus==='live' ? 'pill-pending' : 'pill-alive';
+    const pillText = overallStatus==='eliminated' ? 'Out' : overallStatus==='live' ? '🔴 Live' : 'Alive';
+
+    let teamsHtml = '';
+    entries.forEach(e => {
+      teamsHtml += `<div class="pcard-team-row" style="border-left:2px solid ${e.statusColor};cursor:pointer" onclick="navigateToLoserMatchup('${e.safeId}')" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+        ${e.curSeed ? `<span class="seed">${e.curSeed}</span>` : ''}
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.team}</div>
+          <div style="font-size:11px;color:${e.statusColor}">${e.rowLabel}</div>
+        </div>
+        <span style="color:var(--muted);font-size:14px;opacity:.7">›</span>
+      </div>`;
+    });
+
+    html += `<div class="pcard ${cardClass}">
+      <div class="pcard-head">
+        <div class="avatar ${avClass}">${getInitials(owner)}</div>
+        <div><div class="pcard-name">${owner}</div><span class="status-pill ${pillClass}">${pillText}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">${teamsHtml}</div>
+    </div>`;
+  });
+
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+function navigateToLoserMatchup(matchupId) {
+  // Close search first so it doesn't interfere with position calculations
+  closeLoserSearch();
+
+  function scrollAndPulse() {
+    const card = document.querySelector(`#loser-bracket-container .matchup[data-id="${CSS.escape(matchupId)}"]`);
+    if (!card) return;
+    const loserBody = document.getElementById('loser-page-body');
+    const y = card.getBoundingClientRect().top + loserBody.scrollTop - loserBody.getBoundingClientRect().top - 8;
+    loserBody.scrollTo({top: y, behavior: 'smooth'});
+    card.classList.add('highlight-pulse');
+    card.addEventListener('animationend', () => card.classList.remove('highlight-pulse'), {once:true});
+  }
+
+  if (currentPage !== 'loser') {
+    switchPage('loser');
+    // Wait for slide-in animation + render
+    setTimeout(() => {
+      if (loserSubView !== 'bracket') {
+        showLoserSubView('bracket');
+        setTimeout(scrollAndPulse, 150);
+      } else {
+        scrollAndPulse();
+      }
+    }, 350);
+  } else if (loserSubView !== 'bracket') {
+    showLoserSubView('bracket');
+    setTimeout(scrollAndPulse, 150);
+  } else {
+    // Already on bracket — wait one frame for search panel to close
+    requestAnimationFrame(() => requestAnimationFrame(scrollAndPulse));
+  }
+}
+
+// Loser's bracket has two sub-views: bracket and players
+let loserSubView = 'bracket';
+function showLoserSubView(v) {
+  loserSubView = v;
+  document.getElementById('loser-sub-bracket').classList.toggle('active', v==='bracket');
+  document.getElementById('loser-sub-players').classList.toggle('active', v==='players');
+  if (v==='bracket') renderLoserBracket();
+  else renderLoserPlayersView();
+}
 function navigateToOwner(owner) {
   closeSearch();
   showView('bracket');
@@ -1699,12 +2093,13 @@ function matchupCardSearch(m) {
     : m.isPending || m.isDerived ? `<span class="pending-badge">Upcoming</span>`
     : `<span style="font-size:11px;color:var(--muted)">TBD</span>`;
 
-  const mkRow = (seed, team, owner, isWin, isElim, score, leading) => {
+  const mkRow = (seed, team, owner, isWin, isElim, isAdv, score, leading) => {
     const wc = isWin ? ' winner' : '';
     const ec = isElim ? ' elim' : '';
+    const advC = isAdv ? ' advances' : '';
     const scoreH = showScore && score !== null ? `<span class="score-box${leading?' lead':''}">${score}</span>` : '';
     const chk = isWin ? '<span class="win-check">✓</span>' : '';
-    return `<div class="matchup-team${wc}${ec}">
+    return `<div class="matchup-team${wc}${ec}${advC}">
       ${seed ? `<span class="seed">${seed}</span>` : `<span class="seed" style="opacity:.3">?</span>`}
       <div class="team-info">
         <div class="team-name${wc}">${team||'TBD'}</div>
@@ -1720,8 +2115,46 @@ function matchupCardSearch(m) {
       <div style="display:flex;align-items:center;gap:6px">${statusLabel}${timeStr ? `<span style="font-size:10px;color:var(--muted)">${timeStr}</span>` : ''}<span style="font-size:10px;color:var(--muted);opacity:.6">↗</span></div>
     </div>
     <div style="background:var(--bg)">
-      ${mkRow(m.topSeed, m.topTeam, m.topOwner, topWin, m.isFinal&&botWin, m.topScore, topLead)}
-      ${mkRow(m.botSeed, m.botTeam, m.botOwner, botWin, m.isFinal&&topWin, m.botScore, botLead)}
+      ${mkRow(m.topSeed, m.topTeam, m.topOwner, topWin, m.isFinal&&botWin, m.isFinal&&botWin&&spreadOwnerWinner(m)==="top", m.topScore, topLead)}
+      ${mkRow(m.botSeed, m.botTeam, m.botOwner, botWin, m.isFinal&&topWin, m.isFinal&&topWin&&spreadOwnerWinner(m)==="bot", m.botScore, botLead)}
+    </div>
+    ${m.spread !== null ? `<div style="padding:3px 10px;border-top:1px solid var(--border);font-size:11px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:600">${spreadLabel(m)}</div>` : ''}
+  </div>`;
+}
+
+// Same as matchupCardSearch but navigates within the Loser's Bracket
+function loserMatchupCard(m) {
+  const sw = spreadOwnerWinner(m);
+  const topWin = sw === 'top', botWin = sw === 'bot';
+  const showScore = m.isLive || m.isFinal;
+  const topLead = m.isLive && (m.topScore??0) > (m.botScore??0);
+  const botLead = m.isLive && (m.botScore??0) > (m.topScore??0);
+  const timeStr = formatGameTime(m.gameDate, m.round);
+  const safeId = m.id.replace(/'/g, "\\'");
+  const statusLabel = m.isLive
+    ? `<span class="live-label" style="font-size:11px">● LIVE${m.clock ? ' · '+m.clock : ''}</span>`
+    : m.isFinal ? `<span style="font-size:11px;color:var(--muted)">Final</span>`
+    : `<span class="pending-badge">Upcoming</span>`;
+  const mkRow = (seed, team, owner, isWin, isElim, isAdv, score, leading) => {
+    const wc = isWin ? ' winner' : '';
+    const ec = isElim ? ' elim' : '';
+    const advC = isAdv ? ' advances' : '';
+    const scoreH = showScore && score !== null ? `<span class="score-box${leading?' lead':''}">${score}</span>` : '';
+    const chk = isWin ? '<span class="win-check">✓</span>' : '';
+    return `<div class="matchup-team${wc}${ec}${advC}">
+      ${seed ? `<span class="seed">${seed}</span>` : `<span class="seed" style="opacity:.3">?</span>`}
+      <div class="team-info"><div class="team-name${wc}">${team||'TBD'}</div>${owner ? `<div class="owner-name">${owner}</div>` : ''}</div>
+      ${scoreH}${chk}
+    </div>`;
+  };
+  return `<div onclick="closeLoserSearch();navigateToLoserMatchup('${safeId}')" style="cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor=''">
+    <div style="background:rgba(247,140,63,.08);padding:5px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${ROUNDS[m.round]} · ${m.region}</span>
+      <div style="display:flex;align-items:center;gap:6px">${statusLabel}${timeStr ? `<span style="font-size:10px;color:var(--muted)">${timeStr}</span>` : ''}<span style="font-size:14px;color:var(--muted);opacity:.7">›</span></div>
+    </div>
+    <div style="background:var(--bg)">
+      ${mkRow(m.topSeed,m.topTeam,m.topOwner,topWin,m.isFinal&&botWin,m.isFinal&&botWin&&sw==="top",m.topScore,topLead)}
+      ${mkRow(m.botSeed,m.botTeam,m.botOwner,botWin,m.isFinal&&topWin,m.isFinal&&topWin&&sw==="bot",m.botScore,botLead)}
     </div>
     ${m.spread !== null ? `<div style="padding:3px 10px;border-top:1px solid var(--border);font-size:11px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:600">${spreadLabel(m)}</div>` : ''}
   </div>`;
@@ -1869,6 +2302,13 @@ function setStatus(state,msg){
   const t=document.getElementById('status-text');
   d.className='status-dot'+(state==='live'?' live':state==='error'?' error':state==='ok'?' ok':'');
   t.textContent=msg;
+  // Mirror to loser status bar
+  const ld=document.getElementById('loser-status-dot');
+  const lt=document.getElementById('loser-status-text');
+  if(ld) ld.className=d.className;
+  if(lt) lt.textContent=msg;
+  // Re-measure header height in case status bar changed size
+  if(typeof setHeaderHeight==='function') setHeaderHeight();
 }
 function setUpdated(){
   const now=new Date();
@@ -1878,13 +2318,37 @@ function setUpdated(){
 // ─── FETCH + RENDER ───────────────────────────────────────────────────────────
 async function fetchAndRender(manual=false) {
   const btn = document.getElementById('refresh-btn');
-  btn?.classList.add('spinning');
+  document.querySelectorAll('.refresh-btn').forEach(b=>b.classList.add('spinning'));
   const animStart = Date.now();
   if (manual) setStatus('','Refreshing…');
   try {
     const liveData = await loadLiveMatchups();
     const known = buildFromKnown();
     MATCHUPS = deriveSlots(mergeMatchups(known, liveData));
+
+    // Update Loser's Bracket with live scores/status from liveData
+    // Merge live game data into LOSER_MATCHUPS Sweet 16 entries by team names
+    LOSER_MATCHUPS = buildLoserMatchups(); // rebuild from scratch
+    for (const lm of LOSER_MATCHUPS.filter(m => m.round===2)) {
+      const live = liveData.find(l =>
+        (l.topTeam===lm.topTeam && l.botTeam===lm.botTeam) ||
+        (l.topTeam===lm.botTeam && l.botTeam===lm.topTeam)
+      );
+      if (live) {
+        const flipped = live.topTeam === lm.botTeam;
+        lm.isFinal   = live.isFinal;
+        lm.isLive    = live.isLive;
+        lm.isPending = live.isFinal ? false : live.isLive ? false : true;
+        lm.topScore  = flipped ? live.botScore : live.topScore;
+        lm.botScore  = flipped ? live.topScore : live.botScore;
+        lm.rawWinner = live.rawWinner === null ? null
+          : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+        lm.clock = live.clock; lm.period = live.period;
+        if (lm.spread===null && live.spread!==null) lm.spread = live.spread;
+      }
+    }
+    // Re-derive Elite 8+ with updated scores
+    LOSER_MATCHUPS = deriveLoserSlots(LOSER_MATCHUPS.filter(m=>m.round===2));
     const liveGames = MATCHUPS.filter(m=>m.isLive);
     usingLive = true;
     const liveCount = liveGames.length;
@@ -1897,14 +2361,15 @@ async function fetchAndRender(manual=false) {
     setStatus('ok','Showing latest known results — refresh to retry');
     setUpdated();
   }
-  const scrollY = window.scrollY; // save position before re-render
+  const scrollY = window.scrollY;
   if (currentView==='bracket') renderBracket(null);
+  else if (currentView==='loser') showLoserSubView(loserSubView);
   else renderPlayersView('');
-  window.scrollTo(0, scrollY); // restore after DOM update
+  window.scrollTo(0, scrollY);
   const elapsed = Date.now() - animStart;
   const minAnim = 2000;
   if (elapsed < minAnim) await new Promise(r => setTimeout(r, minAnim - elapsed));
-  btn?.classList.remove('spinning');
+  document.querySelectorAll('.refresh-btn').forEach(b=>b.classList.remove('spinning'));
   scheduleRefresh();
 }
 
@@ -1913,6 +2378,22 @@ function scheduleRefresh() {
   const live = MATCHUPS.some(m=>m.isLive);
   // 15s during live games, 3min otherwise
   refreshTimer = setInterval(()=>fetchAndRender(), live ? 15_000 : 3*60_000);
+}
+
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawer-overlay').classList.toggle('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+function openLoserPage() {
+  document.getElementById('loser-page').classList.add('open');
+  showLoserSubView(loserSubView);
+}
+function closeLoserPage() {
+  document.getElementById('loser-page').classList.remove('open');
 }
 
 function toggleRules() {
@@ -1930,12 +2411,139 @@ function toggleRules() {
   d.style.display = 'block';
 }
 
-const viewScrollPos = {bracket: 0, players: 0};
+const viewScrollPos = {bracket: 0, players: 0, loser: 0};
+let currentPage = 'main'; // 'main' or 'loser'
+
+function switchPage(page) {
+  closeMenu();
+  currentPage = page;
+  if (page === 'loser') {
+    openLoserPage();
+  } else {
+    closeLoserPage();
+  }
+  document.getElementById('menu-main').style.color = page==='main' ? 'var(--accent)' : 'var(--text)';
+  document.getElementById('menu-loser').style.color = page==='loser' ? 'var(--accent)' : 'var(--muted)';
+}
+
+function toggleMenu() {
+  const m = document.getElementById('nav-menu');
+  const isOpen = m.style.display !== 'none';
+  if (!isOpen) {
+    // Update highlights before showing
+    document.getElementById('menu-main').style.color = currentPage==='main' ? 'var(--accent)' : 'var(--text)';
+    document.getElementById('menu-loser').style.color = currentPage==='loser' ? 'var(--accent)' : 'var(--muted)';
+  }
+  m.style.display = isOpen ? 'none' : 'block';
+}
+function closeMenu() {
+  document.getElementById('nav-menu').style.display = 'none';
+}
+
+function doLoserSearch(q) {
+  if (!q.trim()) { closeLoserSearch(); return; }
+  const ql = q.toLowerCase().trim();
+  const allOwners = [...new Set(Object.values(LOSER_OWNER_MAP).map(o=>o.owner))];
+  const matchedOwners = allOwners.filter(o => o.toLowerCase().includes(ql));
+  const matchedMatchups = LOSER_MATCHUPS.filter(m =>
+    !m.isTBD &&
+    (m.topTeam.toLowerCase().includes(ql) || m.botTeam.toLowerCase().includes(ql) ||
+     (m.topOwner||'').toLowerCase().includes(ql) || (m.botOwner||'').toLowerCase().includes(ql))
+  );
+
+  if (!matchedOwners.length && !matchedMatchups.length) {
+    document.getElementById('loser-sr-title').textContent = 'No results';
+    document.getElementById('loser-sr-body').innerHTML = `<div class="empty-msg" style="padding:20px">Nothing found for "${q}"</div>`;
+    document.getElementById('loser-search-results').style.display = 'block';
+    return;
+  }
+
+  let html = '';
+  if (matchedOwners.length) {
+    matchedOwners.forEach(owner => {
+      const myTeams = new Set();
+      for (const m of LOSER_MATCHUPS) {
+        if (m.isTBD) continue;
+        if (m.topOwner===owner && m.topTeam!=='TBD') myTeams.add(m.topTeam);
+        if (m.botOwner===owner && m.botTeam!=='TBD') myTeams.add(m.botTeam);
+      }
+      const entries = [...myTeams].map(team => {
+        const mine = LOSER_MATCHUPS.filter(m =>
+          !m.isTBD && ((m.topTeam===team&&m.topOwner===owner)||(m.botTeam===team&&m.botOwner===owner))
+        ).sort((a,b)=>a.round-b.round);
+        if (!mine.length) return null;
+        const latest = mine[mine.length-1];
+        const side = latest.topTeam===team?'top':'bot';
+        const sw = spreadOwnerWinner(latest);
+        let status;
+        if (latest.isLive) status='live';
+        else if (!latest.isFinal&&!latest.isPending) status='tbd';
+        else if (!latest.isFinal) status='scheduled';
+        else status = sw===side?'alive':'eliminated';
+        const mSide = latest.topTeam===team?'top':'bot';
+        const scoreWon = latest.isFinal&&latest.rawWinner===mSide;
+        const spreadCovered = latest.isFinal&&sw===mSide;
+        let statusColor, rowLabel;
+        if (status==='live'){statusColor='var(--green)';rowLabel=`🔴 Live · ${ROUNDS[latest.round]}`;}
+        else if (status==='scheduled'){statusColor='var(--yellow)';rowLabel=`Upcoming · ${ROUNDS[latest.round]}`;}
+        else if (status==='eliminated'){statusColor='var(--red)';rowLabel=`Out in ${ROUNDS[latest.round]}`;}
+        else if (status==='alive'){
+          statusColor='var(--green)';
+          rowLabel=scoreWon&&spreadCovered?`Won · ${ROUNDS[latest.round]} ✓`:!scoreWon&&spreadCovered?`Covered · ${ROUNDS[latest.round]} ✓`:`Alive · ${ROUNDS[latest.round]} ✓`;
+        } else {statusColor='var(--muted)';rowLabel=ROUNDS[latest.round];}
+        const curSeed = side==='top'?latest.topSeed:latest.botSeed;
+        const safeId = latest.id.replace(/'/g,"\\'");
+        return {team, status, statusColor, rowLabel, curSeed, safeId};
+      }).filter(Boolean);
+
+      const overallStatus = entries.some(e=>e.status==='live')?'live':entries.some(e=>e.status==='scheduled'||e.status==='alive'||e.status==='tbd')?'alive':'eliminated';
+      const pillClass = overallStatus==='eliminated'?'pill-out':overallStatus==='live'?'pill-pending':'pill-alive';
+      const pillText = overallStatus==='eliminated'?'Out':overallStatus==='live'?'🔴 Live':'Alive';
+      const cardClass = overallStatus==='eliminated'?'eliminated':'alive';
+
+      let teamsHtml = '';
+      entries.forEach(e => {
+        teamsHtml += `<div onclick="closeLoserSearch();navigateToLoserMatchup('${e.safeId}')"
+          style="display:flex;align-items:flex-start;gap:8px;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border-left:2px solid ${e.statusColor};cursor:pointer;transition:background .15s"
+          onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg)'">
+          ${e.curSeed?`<span class="seed">${e.curSeed}</span>`:''}
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px">
+              ${e.team}<span style="font-size:14px;color:var(--muted);opacity:.7">›</span>
+            </div>
+            <div style="font-size:11px;color:${e.statusColor}">${e.rowLabel}</div>
+          </div>
+        </div>`;
+      });
+      html += `<div class="player-card ${cardClass}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div class="player-name">${owner}</div>
+          <span class="status-pill ${pillClass}">${pillText}</span>
+        </div>${teamsHtml}</div>`;
+    });
+  }
+
+  const queryMatchesOwner = matchedOwners.some(o=>o.toLowerCase()===ql);
+  const gameMatchups = matchedMatchups.filter(m=>m.topTeam.toLowerCase().includes(ql)||m.botTeam.toLowerCase().includes(ql));
+  if (gameMatchups.length && !queryMatchesOwner) {
+    if (matchedOwners.length) html+=`<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:12px 0 8px">Games</div>`;
+    gameMatchups.forEach(m => { html += loserMatchupCard(m); });
+  }
+
+  const count = matchedOwners.length + (!queryMatchesOwner ? gameMatchups.length : 0);
+  document.getElementById('loser-sr-title').textContent = `${count} result${count!==1?'s':''}`;
+  document.getElementById('loser-sr-body').innerHTML = html;
+  document.getElementById('loser-search-results').style.display = 'block';
+}
+
+function closeLoserSearch() {
+  document.getElementById('loser-search-results').style.display = 'none';
+  document.getElementById('loser-search').value = '';
+}
 
 function showView(v) {
   const wasAlready = currentView === v;
   if (!wasAlready) {
-    // Save scroll position of the view we're leaving
     viewScrollPos[currentView] = window.scrollY;
   }
   currentView = v;
@@ -1945,7 +2553,6 @@ function showView(v) {
   if (!wasAlready) {
     if (v==='players') renderPlayersView('');
     else renderBracket(null);
-    // Restore saved scroll position for this view
     requestAnimationFrame(() => window.scrollTo(0, viewScrollPos[v]));
   }
 }
@@ -1956,8 +2563,19 @@ let st;
 se.addEventListener('input',e=>{clearTimeout(st);const v=e.target.value;if(!v.trim()){closeSearch();return;}st=setTimeout(()=>doSearch(v),250);});
 se.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();if(e.key==='Enter')doSearch(e.target.value);});
 document.getElementById('search-results').addEventListener('click',e=>{if(e.target===document.getElementById('search-results'))closeSearch();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();document.getElementById('rules-dropdown').style.display='none';}});
-document.addEventListener('click',e=>{if(!document.getElementById('rules-btn')?.contains(e.target)){document.getElementById('rules-dropdown').style.display='none';}});
+
+// Loser search listeners
+const lse=document.getElementById('loser-search');
+let lst;
+lse.addEventListener('input',e=>{clearTimeout(lst);const v=e.target.value;if(!v.trim()){closeLoserSearch();return;}lst=setTimeout(()=>doLoserSearch(v),250);});
+lse.addEventListener('keydown',e=>{if(e.key==='Escape')closeLoserSearch();if(e.key==='Enter')doLoserSearch(e.target.value);});
+document.getElementById('loser-search-results').addEventListener('click',e=>{if(e.target===document.getElementById('loser-search-results'))closeLoserSearch();});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSearch();closeLoserSearch();closeMenu();document.getElementById('rules-dropdown').style.display='none';}});
+document.addEventListener('click',e=>{
+  if(!document.getElementById('rules-btn')?.contains(e.target)){document.getElementById('rules-dropdown').style.display='none';}
+  if(!document.getElementById('nav-menu')?.contains(e.target)&&![...document.querySelectorAll('.hamburger')].some(b=>b.contains(e.target))){closeMenu();}
+});
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 // Show loading screen for at least 1.5s
@@ -1989,6 +2607,18 @@ hideLoadingScreen();
 // 2. Then fetch live data in background and merge
 fetchAndRender();
 </script>
+</div>
+<div id="nav-menu" style="display:none;position:fixed;inset:0;z-index:1000">
+  <div onclick="closeMenu()" style="position:absolute;inset:0;background:rgba(0,0,0,.6)"></div>
+  <div style="position:absolute;top:0;left:0;bottom:0;width:240px;background:#161b22;border-right:1px solid rgba(255,255,255,0.1);padding:24px 0;display:flex;flex-direction:column;gap:0">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0 20px 12px">Navigate</div>
+    <button id="menu-main" onclick="switchPage('main')" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--text);text-align:left;width:100%;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
+      🏀 <span>Main Bracket</span>
+    </button>
+    <button id="menu-loser" onclick="switchPage('loser')" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--muted);text-align:left;width:100%;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
+      🗑️ <span>Loser's Bracket</span>
+    </button>
+  </div>
 </div>
 </body>
 </html>

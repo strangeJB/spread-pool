@@ -95,6 +95,8 @@
 
   .rounds-scroll{overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;will-change:transform;}
   .rounds-row{display:flex;gap:0;min-width:640px;align-items:stretch;}
+  .rounds-row.early-hidden{min-width:0;}
+  .rounds-row.early-hidden .round-col{min-width:90px;}
   .round-col{flex:1;min-width:110px;display:flex;flex-direction:column;}
   .loser-rounds-row{display:flex;gap:0;align-items:stretch;}
   .loser-rounds-row .round-col{min-width:90px;}
@@ -184,8 +186,10 @@
 
   .rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(--r);color:var(--muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
   .rules-note strong{color:var(--accent);}
-  .early-rounds-toggle{-webkit-appearance:none;appearance:none;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:4px 12px;transition:color .15s,border-color .15s;margin-bottom:10px;}
-  .early-rounds-toggle:hover{color:var(--text);border-color:var(--border2);}
+  .early-rounds-fab{-webkit-appearance:none;appearance:none;background:#1c2230;border:1px solid var(--border2);border-radius:20px;bottom:calc(20px + env(safe-area-inset-bottom));box-shadow:0 4px 16px rgba(0,0,0,.5);color:var(--muted);cursor:pointer;display:none;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:8px 16px;position:fixed;right:16px;transition:color .15s,border-color .15s,background .15s;z-index:90;}
+  .early-rounds-fab:hover{background:#222d42;border-color:rgba(255,255,255,.25);color:var(--text);}
+  #view-bracket.active ~ * .early-rounds-fab,
+  .early-rounds-fab.visible{display:block;}
   .rounds-row.early-hidden .round-col-early{display:none;}
     .region-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:10px 0 4px;}
   .empty-msg{color:var(--muted);font-size:14px;text-align:center;padding:40px;}
@@ -309,6 +313,8 @@
     </div>
   </div>
 </div>
+
+<button class="early-rounds-fab visible" id="early-rounds-fab" onclick="toggleEarlyRounds()">◀ Hide Early Rounds</button>
 
 <div id="loading-screen">
   <div class="hoop-scene">
@@ -1463,6 +1469,8 @@ let usingLive = false;
 let earlyRoundsCollapsed = false;
 function toggleEarlyRounds() {
   earlyRoundsCollapsed = !earlyRoundsCollapsed;
+  const fab = document.getElementById('early-rounds-fab');
+  if (fab) fab.textContent = earlyRoundsCollapsed ? '▶ Show Early Rounds' : '◀ Hide Early Rounds';
   renderBracket(null);
 }
 let currentView = 'bracket';
@@ -1599,8 +1607,6 @@ function renderBracket(hl) {
   }
 
   const earlyHiddenClass = earlyRoundsCollapsed ? ' early-hidden' : '';
-  const toggleLabel = earlyRoundsCollapsed ? '▶ Show Early Rounds' : '◀ Hide Early Rounds';
-  html += `<button class="early-rounds-toggle" onclick="toggleEarlyRounds()">${toggleLabel}</button>`;
   const regions=['East','South','West','Midwest'];
   regions.forEach(region=>{
     const rMs=MATCHUPS.filter(m=>m.region===region);
@@ -2650,6 +2656,8 @@ function showView(v) {
   }
   currentView = v;
   document.getElementById('view-bracket').classList.toggle('active', v==='bracket');
+  const fab = document.getElementById('early-rounds-fab');
+  if (fab) fab.style.display = v==='bracket' ? 'block' : 'none';
   document.getElementById('view-players').classList.toggle('active', v==='players');
   document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.toggle('active', t.dataset.view === v));
   if (!wasAlready) {

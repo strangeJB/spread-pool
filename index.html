@@ -314,7 +314,7 @@
   </div>
 </div>
 
-<button class="early-rounds-fab visible" id="early-rounds-fab" onclick="toggleEarlyRounds()">◀ Hide Early Rounds</button>
+<button class="early-rounds-fab visible" id="early-rounds-fab" onclick="toggleEarlyRounds()">▶ Hide Early Rounds</button>
 
 <div id="loading-screen">
   <div class="hoop-scene">
@@ -393,10 +393,10 @@ const OWNER_MAP = {
   'TCU':              {owner:'Jake',    seed:9,  region:'East'},
   "St. John's":       {owner:'Brian P', seed:5,  region:'East'},
   'Northern Iowa':    {owner:'Steph',   seed:12, region:'East'},
-  'Kansas':           {owner:'Lori/Henry',    seed:4,  region:'East'},
+  'Kansas':           {owner:'Lori',       seed:4,  region:'East'},
   'Cal Baptist':      {owner:'Alan',    seed:13, region:'East'},
   'Louisville':       {owner:'Nick',    seed:6,  region:'East'},
-  'South Florida':    {owner:'David/Caroline',     seed:11, region:'East'},
+  'South Florida':    {owner:'Jon',        seed:11, region:'East'},
   'Michigan St.':     {owner:'Brian T', seed:3,  region:'East'},
   'North Dakota St.': {owner:'Mike F',  seed:14, region:'East'},
   'UCLA':             {owner:'Morgan',  seed:7,  region:'East'},
@@ -415,11 +415,11 @@ const OWNER_MAP = {
   'North Carolina':   {owner:'Troy',    seed:6,  region:'South'},
   'VCU':              {owner:'Cassie',  seed:11, region:'South'},
   'Illinois':         {owner:'Josh',    seed:3,  region:'South'},
-  'Penn':             {owner:'Morgan',   seed:14, region:'South'},
+  'Penn':             {owner:'Henry',    seed:14, region:'South'},
   "Saint Mary's":     {owner:'Caroline',seed:7,  region:'South'},
   'Texas A&M':        {owner:'Abi',     seed:10, region:'South'},
   'Houston':          {owner:'Jonathon',seed:2,  region:'South'},
-  'Idaho':            {owner:'Amy/Jon',     seed:15, region:'South'},
+  'Idaho':            {owner:'Amy',        seed:15, region:'South'},
   // West
   'Arizona':          {owner:'Morgan',  seed:1,  region:'West'},
   'Long Island':      {owner:'Boris',   seed:16, region:'West'},
@@ -433,15 +433,15 @@ const OWNER_MAP = {
   'Texas':            {owner:'Ron',     seed:11, region:'West'},
   'Gonzaga':          {owner:'Brian T', seed:3,  region:'West'},
   'Kennesaw St.':     {owner:'Nick',    seed:14, region:'West'},
-  'Miami (FL)':       {owner:'David/Caroline',     seed:7,  region:'West'},
-  'Missouri':         {owner:'Amy/Jon',     seed:10, region:'West'},
+  'Miami (FL)':       {owner:'Jon',        seed:7,  region:'West'},
+  'Missouri':         {owner:'Amy',        seed:10, region:'West'},
   'Purdue':           {owner:'Mike F',  seed:2,  region:'West'},
   "Queens (N.C.)":    {owner:'Steph',   seed:15, region:'West'},
   // Midwest
   'Michigan':         {owner:'Callie',  seed:1,  region:'Midwest'},
   'Howard':           {owner:'Ethan',   seed:16, region:'Midwest'},
-  'Saint Louis':      {owner:'Morgan',   seed:8,  region:'Midwest'},
-  'Georgia':          {owner:'Lori/Henry',    seed:9,  region:'Midwest'},
+  'Saint Louis':      {owner:'Henry',    seed:8,  region:'Midwest'},
+  'Georgia':          {owner:'Lori',       seed:9,  region:'Midwest'},
   'Texas Tech':       {owner:'Becca',   seed:5,  region:'Midwest'},
   'Akron':            {owner:'Abi',     seed:12, region:'Midwest'},
   'Alabama':          {owner:'Brian P', seed:4,  region:'Midwest'},
@@ -1470,7 +1470,7 @@ let earlyRoundsCollapsed = false;
 function toggleEarlyRounds() {
   earlyRoundsCollapsed = !earlyRoundsCollapsed;
   const fab = document.getElementById('early-rounds-fab');
-  if (fab) fab.textContent = earlyRoundsCollapsed ? '▶ Show Early Rounds' : '◀ Hide Early Rounds';
+  if (fab) fab.textContent = earlyRoundsCollapsed ? '◀ Show Early Rounds' : '▶ Hide Early Rounds';
   renderBracket(null);
 }
 let currentView = 'bracket';
@@ -2041,8 +2041,19 @@ function showLoserSubView(v) {
 }
 function navigateToOwner(owner) {
   closeSearch();
+  // If the owner's most recent visible matchup is in an early round, auto-expand
+  if (earlyRoundsCollapsed) {
+    const ownerMatchups = MATCHUPS.filter(m =>
+      !m.isTBD && (m.topOwner === owner || m.botOwner === owner)
+    );
+    const latestRound = ownerMatchups.length ? Math.max(...ownerMatchups.map(m => m.round)) : 99;
+    if (latestRound <= 1) {
+      earlyRoundsCollapsed = false;
+      const fab = document.getElementById('early-rounds-fab');
+      if (fab) fab.textContent = '▶ Hide Early Rounds';
+    }
+  }
   showView('bracket');
-  // Re-render with highlight so owner name glows, but only if needed
   renderBracket(owner);
   requestAnimationFrame(() => {
     const ownerEls = document.querySelectorAll('.owner-name.hl');
@@ -2063,8 +2074,24 @@ function navigateToOwner(owner) {
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
 function navigateToMatchup(matchupId) {
   closeSearch();
+
+  // If the target is an early-round game and early rounds are collapsed, expand first
+  const targetMatchup = MATCHUPS.find(m => m.id === matchupId);
+  const needsExpand = targetMatchup && targetMatchup.round <= 1 && earlyRoundsCollapsed;
+  if (needsExpand) {
+    earlyRoundsCollapsed = false;
+    const fab = document.getElementById('early-rounds-fab');
+    if (fab) fab.textContent = '▶ Hide Early Rounds';
+  }
+
   const wasOnBracket = currentView === 'bracket';
-  showView('bracket');
+  if (needsExpand) {
+    // Force re-render so early round cards appear in the DOM
+    showView('bracket');
+    renderBracket(null);
+  } else {
+    showView('bracket');
+  }
 
   function scrollAndPulse() {
     const card = document.querySelector(`.matchup[data-id="${CSS.escape(matchupId)}"]`);

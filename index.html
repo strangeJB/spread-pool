@@ -571,11 +571,11 @@ const SWEET16_DATA = [
   {top:'Nebraska',    bot:'Iowa',        spread:2.5,  region:'South',   gameDate:'2026-03-27T00:30:00Z'},
   {top:'Houston',     bot:'Illinois',    spread:2.5,  region:'South',   gameDate:'2026-03-27T03:05:00Z'},
   // East — Capital One Arena, Washington D.C.
-  {top:'Duke',        bot:"St. John's",  spread:6.5,  region:'East',    gameDate:'2026-03-28T00:10:00Z'},
-  {top:'UConn',       bot:'Michigan St.',spread:1.5,  region:'East',    gameDate:'2026-03-28T02:45:00Z'},
+  {top:'Duke',        bot:"St. John's",  spread:6.5,  region:'East',    gameDate:'2026-03-27T23:10:00Z'},
+  {top:'UConn',       bot:'Michigan St.',spread:1.5,  region:'East',    gameDate:'2026-03-28T01:45:00Z'},
   // Midwest — United Center, Chicago
-  {top:'Michigan',    bot:'Alabama',     spread:10.5, region:'Midwest', gameDate:'2026-03-28T00:35:00Z'},
-  {top:'Iowa St.',    bot:'Tennessee',   spread:4.5,  region:'Midwest', gameDate:'2026-03-28T03:10:00Z'},
+  {top:'Michigan',    bot:'Alabama',     spread:10.5, region:'Midwest', gameDate:'2026-03-27T23:35:00Z'},
+  {top:'Iowa St.',    bot:'Tennessee',   spread:4.5,  region:'Midwest', gameDate:'2026-03-28T02:10:00Z'},
 ];
 
 // ─── LOSER'S BRACKET ──────────────────────────────────────────────────────────
@@ -2396,6 +2396,7 @@ async function fetchAndRender(manual=false) {
           : flipped ? (live.rawWinner === 'top' ? 'bot' : 'top') : live.rawWinner;
         slot.clock  = live.clock;
         slot.period = live.period;
+        if (slot.spread === null && live.spread !== null) slot.spread = live.spread;
       }
     }
 

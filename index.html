@@ -1332,8 +1332,10 @@ async function loadLiveMatchups() {
   // Fetch yesterday through all future tournament dates
   const today = new Date();
   const todayNum = parseInt(today.toISOString().slice(0,10).replace(/-/g,''));
-  // Include yesterday in case of late games, all future dates
-  const relevantDates = FETCH_DATES.filter(d => parseInt(d) >= todayNum - 1);
+  // Fetch from Sweet 16 start (Mar 26) through all future dates
+  // R0/R1 are hardcoded in KNOWN_RESULTS; Sweet 16+ need live data
+  const SWEET16_START = 20260326;
+  const relevantDates = FETCH_DATES.filter(d => parseInt(d) >= Math.min(todayNum - 1, SWEET16_START));
 
   const results = await Promise.allSettled(relevantDates.map(d => fetchDate(d)));
   for (const res of results) {

@@ -1642,14 +1642,18 @@ function renderBracket(hl) {
   // Final Four + Championship
   const ff=MATCHUPS.filter(m=>m.round===4);
   const ch=MATCHUPS.filter(m=>m.round===5);
-  html+=`<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row" style="min-width:300px">`;
-  html+=`<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
-  ff.forEach(m=>{html+=matchupHtml(m,hl);});
-  html+=`</div></div>`;
-  html+=`<div class="round-col"><div class="round-header"><div class="round-name">Championship</div><div class="round-dates">Apr 6</div></div><div class="matchups-col">`;
-  ch.forEach(m=>{html+=matchupHtml(m,hl);});
-  html+=`</div></div>`;
-  html+=`</div></div>`;
+  const ffTeamsKnown = ff.length>=2 && ff.every(m=>m.topTeam!=='TBD'&&m.botTeam!=='TBD');
+  let ffHtml='';
+  ffHtml+=`<div class="region-lbl">Final Four &amp; Championship</div><div class="rounds-scroll" data-bracket-scroll><div class="rounds-row" style="min-width:300px">`;
+  ffHtml+=`<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
+  ff.forEach(m=>{ffHtml+=matchupHtml(m,hl);});
+  ffHtml+=`</div></div>`;
+  ffHtml+=`<div class="round-col"><div class="round-header"><div class="round-name">Championship</div><div class="round-dates">Apr 6</div></div><div class="matchups-col">`;
+  ch.forEach(m=>{ffHtml+=matchupHtml(m,hl);});
+  ffHtml+=`</div></div>`;
+  ffHtml+=`</div></div>`;
+  if (ffTeamsKnown) html = ffHtml + html;
+  else html += ffHtml;
 
   c.innerHTML=html;
 
@@ -1875,7 +1879,8 @@ function renderPlayersView(filter) {
 // ─── LOSER'S BRACKET RENDER ───────────────────────────────────────────────────
 function renderLoserBracket() {
   const c = document.getElementById('loser-bracket-container');
-  let html = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 0 12px">Losers' Bracket · Sweet 16 onward</div>`;
+  const pageTitle = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 0 12px">Losers' Bracket · Sweet 16 onward</div>`;
+  let html = '';
 
   const regions = ['East','South','West','Midwest'];
   regions.forEach(region => {
@@ -1893,13 +1898,18 @@ function renderLoserBracket() {
   // Final Four + Championship
   const ff = LOSER_MATCHUPS.filter(m => m.round===4);
   const ch = LOSER_MATCHUPS.filter(m => m.round===5);
-  html += `<div class="region-lbl">Final Four &amp; Championship</div><div class="loser-rounds-scroll"><div class="loser-rounds-row">`;
-  html += `<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
-  ff.forEach(m => { html += matchupHtml(m, null); });
-  html += `</div></div>`;
-  html += `<div class="round-col"><div class="round-header"><div class="round-name">Championship</div><div class="round-dates">Apr 6</div></div><div class="matchups-col">`;
-  ch.forEach(m => { html += matchupHtml(m, null); });
-  html += `</div></div></div></div>`;
+  const ffTeamsKnown = ff.length>=2 && ff.every(m=>m.topTeam!=='TBD'&&m.botTeam!=='TBD');
+  let ffHtml = '';
+  ffHtml += `<div class="region-lbl">Final Four &amp; Championship</div><div class="loser-rounds-scroll"><div class="loser-rounds-row">`;
+  ffHtml += `<div class="round-col"><div class="round-header"><div class="round-name">Final Four</div><div class="round-dates">Apr 4</div></div><div class="matchups-col">`;
+  ff.forEach(m => { ffHtml += matchupHtml(m, null); });
+  ffHtml += `</div></div>`;
+  ffHtml += `<div class="round-col"><div class="round-header"><div class="round-name">Championship</div><div class="round-dates">Apr 6</div></div><div class="matchups-col">`;
+  ch.forEach(m => { ffHtml += matchupHtml(m, null); });
+  ffHtml += `</div></div>`;
+  ffHtml += `</div></div>`;
+  if (ffTeamsKnown) html = pageTitle + ffHtml + html;
+  else html = pageTitle + html + ffHtml;
 
   c.innerHTML = html;
 

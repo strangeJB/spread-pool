@@ -31,7 +31,7 @@
 
   header{background:#161b22;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px;position:fixed;top:0;left:0;right:0;z-index:100;-webkit-backdrop-filter:none;}
   .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;}
-  .logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex-shrink:0;}
   .logo span{color:var(--text);font-weight:400;}
   .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;flex:1;min-width:0;}
   .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
@@ -204,7 +204,7 @@
 
   @media(max-width:600px){
     .tab{font-size:11px;padding:4px 8px;}
-    .logo{display:none;}
+    .logo{font-size:17px;}
     .search-wrap{flex:1;min-width:0;max-width:100%;}
     .players-grid{grid-template-columns:1fr;}
     .header-inner{flex-wrap:wrap;}
@@ -242,7 +242,7 @@
 <header>
   <div class="header-inner">
     <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu" id="hamburger-btn"><span class="hbball">🏀</span></button>
-    <div class="logo">2026 March Madness Spread Pool</div>
+    <div class="logo">Main Bracket</div>
 
     <div class="search-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -301,13 +301,15 @@
       <div id="loser-sr-body"></div>
     </div>
   </div>
-  <div id="loser-page-body">
-    <div id="loser-status-bar" class="sb-inner" style="background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;display:flex;align-items:center;gap:8px;">
+  <div id="loser-status-bar" style="background:#1c2230;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;padding:6px 16px;flex-shrink:0;">
+    <div class="sb-inner">
       <div class="status-dot" id="loser-status-dot"></div>
       <span id="loser-status-text">Loading…</span>
       <span style="flex:1"></span>
       <button class="refresh-btn" onclick="fetchAndRender(true)"><span class="bball">↻ Refresh</span><span class="bball-anim">🏀</span></button>
     </div>
+  </div>
+  <div id="loser-page-body">
     <div class="view-wrap">
       <div id="loser-bracket-container"><div class="empty-msg">Loading…</div></div>
     </div>
@@ -1468,9 +1470,10 @@ function spreadLabel(m) {
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 let MATCHUPS = deriveSlots(buildFromKnown()); // start with known data immediately
 let usingLive = false;
-let earlyRoundsCollapsed = false;
+let earlyRoundsCollapsed = localStorage.getItem('earlyRoundsCollapsed') === 'true';
 function toggleEarlyRounds() {
   earlyRoundsCollapsed = !earlyRoundsCollapsed;
+  localStorage.setItem('earlyRoundsCollapsed', earlyRoundsCollapsed);
   const fab = document.getElementById('early-rounds-fab');
   if (fab) fab.textContent = earlyRoundsCollapsed ? '◀ Show Early Rounds' : '▶ Hide Early Rounds';
   renderBracket(null);
@@ -2429,10 +2432,8 @@ async function fetchAndRender(manual=false) {
         const e8slot = MATCHUPS.find(m => m.isDerived && m.round===3 && m.region===region);
         if (e8slot && s16.length >= 2) {
           const adA = advWinner(s16[0]), adB = advWinner(s16[1]);
-
-
-          if (adA) { e8slot.topTeam=adA.team; e8slot.topOwner=adA.owner; e8slot.topSeed=adA.seed; }
-          if (adB) { e8slot.botTeam=adB.team; e8slot.botOwner=adB.owner; e8slot.botSeed=adB.seed; }
+          e8slot.topTeam  = adA ? adA.team  : 'TBD'; e8slot.topOwner = adA ? adA.owner : null; e8slot.topSeed = adA ? adA.seed : null;
+          e8slot.botTeam  = adB ? adB.team  : 'TBD'; e8slot.botOwner = adB ? adB.owner : null; e8slot.botSeed = adB ? adB.seed : null;
           e8slot.isTBD = !adA && !adB;
         }
       }
@@ -2447,8 +2448,8 @@ async function fetchAndRender(manual=false) {
         const mA = MATCHUPS.find(m => m.round===3 && m.region===rA && m.topTeam!=='TBD');
         const mB = MATCHUPS.find(m => m.round===3 && m.region===rB && m.topTeam!=='TBD');
         const adA = advWinner(mA), adB = advWinner(mB);
-        if (adA) { slot.topTeam=adA.team; slot.topOwner=adA.owner; slot.topSeed=adA.seed; }
-        if (adB) { slot.botTeam=adB.team; slot.botOwner=adB.owner; slot.botSeed=adB.seed; }
+        slot.topTeam  = adA ? adA.team  : 'TBD'; slot.topOwner = adA ? adA.owner : null; slot.topSeed = adA ? adA.seed : null;
+        slot.botTeam  = adB ? adB.team  : 'TBD'; slot.botOwner = adB ? adB.owner : null; slot.botSeed = adB ? adB.seed : null;
         slot.isTBD = !adA && !adB;
       });
 
@@ -2458,8 +2459,8 @@ async function fetchAndRender(manual=false) {
         .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
       if (champ && ffs.length >= 2) {
         const adA = advWinner(ffs[0]), adB = advWinner(ffs[1]);
-        if (adA) { champ.topTeam=adA.team; champ.topOwner=adA.owner; champ.topSeed=adA.seed; }
-        if (adB) { champ.botTeam=adB.team; champ.botOwner=adB.owner; champ.botSeed=adB.seed; }
+        champ.topTeam  = adA ? adA.team  : 'TBD'; champ.topOwner = adA ? adA.owner : null; champ.topSeed = adA ? adA.seed : null;
+        champ.botTeam  = adB ? adB.team  : 'TBD'; champ.botOwner = adB ? adB.owner : null; champ.botSeed = adB ? adB.seed : null;
         champ.isTBD = !adA && !adB;
       }
     })();
@@ -2741,6 +2742,8 @@ setHeaderHeight();
 window.addEventListener('resize', setHeaderHeight);
 // 1. Immediately render from known data (bracket is never empty)
 setStatus('','Loading live data from ESPN…');
+const _fab = document.getElementById('early-rounds-fab');
+if (_fab) _fab.textContent = earlyRoundsCollapsed ? '◀ Show Early Rounds' : '▶ Hide Early Rounds';
 renderBracket(null);
 hideLoadingScreen();
 

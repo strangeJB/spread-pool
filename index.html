@@ -35,7 +35,7 @@
   .logo span{color:var(--text);font-weight:400;}
   .search-wrap{flex:1;min-width:200px;max-width:380px;position:relative;flex:1;min-width:0;}
   .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-  #search{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text);font-family:inherit;font-size:14px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
+  #search{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text);font-family:inherit;font-size:16px;padding:7px 12px 7px 34px;outline:none;transition:border-color .15s;}
   #search::placeholder{color:var(--muted);}
   #search:focus{border-color:var(--accent);}
   .tab-bar{display:flex;gap:4px;margin-left:auto;}
@@ -148,7 +148,7 @@
   .drawer-item{-webkit-appearance:none;background:none;border:none;border-radius:8px;color:var(--text);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;padding:12px 14px;text-align:left;transition:background .15s;width:100%;}
   .drawer-item:hover{background:var(--bg3);}
 
-  /* Loser's Bracket full-page overlay */
+  /* Losers' Bracket full-page overlay */
   #nav-menu{position:fixed;inset:0;z-index:1000;pointer-events:none;opacity:0;transition:opacity .25s ease;}
   #nav-menu.open{pointer-events:auto;opacity:1;}
   #nav-menu .nav-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);}
@@ -163,7 +163,7 @@
   .loser-title{color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;white-space:nowrap;}
   .loser-search-wrap{flex:1;min-width:160px;max-width:380px;position:relative;}
   .loser-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-  .loser-search-wrap input{background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;padding:6px 12px 6px 32px;width:100%;box-sizing:border-box;outline:none;transition:border-color .15s;}
+  .loser-search-wrap input{background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:16px;padding:6px 12px 6px 32px;width:100%;box-sizing:border-box;outline:none;transition:border-color .15s;}
   .loser-search-wrap input:focus{border-color:var(--accent);}
   #loser-page-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #loser-search-results{display:none;position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.75);z-index:10;padding:80px 16px 16px;overflow-y:auto;}
@@ -272,16 +272,16 @@
     <button onclick="closeDrawer()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px">✕</button>
   </div>
   <div id="drawer-body">
-    <button class="drawer-item" onclick="closeDrawer();openLoserPage()">🏀 Loser's Bracket</button>
+    <button class="drawer-item" onclick="closeDrawer();openLoserPage()">🏀 Losers' Bracket</button>
   </div>
 </div>
 
-<!-- ── Loser's Bracket Page ── -->
+<!-- ── Losers' Bracket Page ── -->
 <div id="loser-page">
   <div id="loser-page-header">
     <div class="loser-header-inner">
       <button class="hamburger" onclick="toggleMenu()" title="Menu" aria-label="Menu"><span class="hbball">🏀</span></button>
-      <div class="loser-title">Loser's Bracket</div>
+      <div class="loser-title">Losers' Bracket</div>
       <div class="loser-search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="loser-search" placeholder="Search players or teams…" autocomplete="off" autocorrect="off">
@@ -601,7 +601,7 @@ const LOSER_OWNER_MAP = {
   'Arkansas':    {owner:'Troy',   seed:4,  region:'West'},
 };
 
-// Build Loser's Bracket matchups from Sweet 16 onward
+// Build Losers' Bracket matchups from Sweet 16 onward
 // Uses the same SWEET16_DATA games but with LOSER_OWNER_MAP assignments
 function buildLoserMatchups() {
   let placeholderIdx = 1000; // offset to avoid ID collisions with main bracket
@@ -1862,7 +1862,7 @@ function renderPlayersView(filter) {
 // ─── LOSER'S BRACKET RENDER ───────────────────────────────────────────────────
 function renderLoserBracket() {
   const c = document.getElementById('loser-bracket-container');
-  let html = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 0 12px">Loser's Bracket · Sweet 16 onward</div>`;
+  let html = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 0 12px">Losers' Bracket · Sweet 16 onward</div>`;
 
   const regions = ['East','South','West','Midwest'];
   regions.forEach(region => {
@@ -2035,7 +2035,7 @@ function navigateToLoserMatchup(matchupId) {
   }
 }
 
-// Loser's bracket has two sub-views: bracket and players
+// Losers' bracket has two sub-views: bracket and players
 let loserSubView = 'bracket';
 function showLoserSubView(v) {
   loserSubView = v;
@@ -2179,7 +2179,7 @@ function matchupCardSearch(m) {
   </div>`;
 }
 
-// Same as matchupCardSearch but navigates within the Loser's Bracket
+// Same as matchupCardSearch but navigates within the Losers' Bracket
 function loserMatchupCard(m) {
   const sw = spreadOwnerWinner(m);
   const topWin = sw === 'top', botWin = sw === 'bot';
@@ -2466,7 +2466,7 @@ async function fetchAndRender(manual=false) {
     })();
 
 
-    // Update Loser's Bracket with live scores/status from liveData
+    // Update Losers' Bracket with live scores/status from liveData
     // Merge live game data into LOSER_MATCHUPS Sweet 16 entries by team names
     LOSER_MATCHUPS = buildLoserMatchups(); // rebuild from scratch
     for (const lm of LOSER_MATCHUPS.filter(m => m.round===2)) {
@@ -2759,7 +2759,7 @@ fetchAndRender();
       🏀 <span>Main Bracket</span>
     </button>
     <button id="menu-loser" onclick="switchPage('loser')" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--muted);text-align:left;width:100%;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">
-      🗑️ <span>Loser's Bracket</span>
+      🗑️ <span>Losers' Bracket</span>
     </button>
     <div style="border-top:1px solid rgba(255,255,255,0.07);margin:8px 0"></div>
     <button id="rules-btn" onclick="toggleRules()" style="-webkit-appearance:none;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 20px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:500;color:var(--muted);text-align:left;width:100%;transition:background .15s;letter-spacing:0" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='none'">

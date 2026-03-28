@@ -187,7 +187,7 @@
 
   .rules-note{background:rgba(247,140,63,.07);border:1px solid rgba(247,140,63,.2);border-radius:var(--r);color:var(--muted);font-size:12px;margin-bottom:16px;padding:10px 14px;}
   .rules-note strong{color:var(--accent);}
-  .early-rounds-fab{-webkit-appearance:none;appearance:none;background:#1c2230;border:1px solid var(--border2);border-radius:20px;bottom:calc(20px + env(safe-area-inset-bottom));box-shadow:0 4px 16px rgba(0,0,0,.5);color:var(--muted);cursor:pointer;display:none;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:8px 16px;position:fixed;right:16px;transition:color .15s,border-color .15s,background .15s;z-index:90;}
+  .early-rounds-fab{-webkit-appearance:none;appearance:none;background:#1c2230;border:1px solid var(--border2);border-radius:20px;bottom:calc(20px + env(safe-area-inset-bottom));box-shadow:0 4px 16px rgba(0,0,0,.5);box-sizing:border-box;color:var(--muted);cursor:pointer;display:none;font-family:'Barlow Condensed',sans-serif;font-size:12px !important;font-weight:600;height:34px;letter-spacing:.5px;line-height:34px;padding:0 16px;position:fixed;right:16px;text-align:center;transition:color .15s,border-color .15s,background .15s;white-space:nowrap;width:170px;z-index:90;}
   .early-rounds-fab:hover{background:#222d42;border-color:rgba(255,255,255,.25);color:var(--text);}
   #view-bracket.active ~ * .early-rounds-fab,
   .early-rounds-fab.visible{display:block;}
@@ -317,7 +317,7 @@
   </div>
 </div>
 
-<button class="early-rounds-fab visible" id="early-rounds-fab" onclick="toggleEarlyRounds()">▶ Hide Early Rounds</button>
+<button class="early-rounds-fab" id="early-rounds-fab" onclick="toggleEarlyRounds()">▶ Hide Early Rounds</button>
 
 <div id="loading-screen">
   <div class="hoop-scene">
@@ -581,7 +581,7 @@ const SWEET16_DATA = [
   {top:'Iowa St.',    bot:'Tennessee',   spread:4.5,  region:'Midwest', gameDate:'2026-03-28T02:10:00Z'},
 ];
 
-// ─── LOSER'S BRACKET ──────────────────────────────────────────────────────────
+// ─── LOSERS' BRACKET ──────────────────────────────────────────────────────────
 // Starts at Sweet 16 with a separate group of owners assigned to the 16 teams
 const LOSER_OWNER_MAP = {
   'Illinois':    {owner:'Steph',  seed:3,  region:'South'},
@@ -785,6 +785,19 @@ const KNOWN_RESULTS = [
   {top:'Texas Tech',   bot:'Alabama',         topScore:65,  botScore:90, spread:1.0,  round:1, region:'Midwest',gameDate:'2026-03-23T01:45:00Z'},
   {top:'Tennessee',    bot:'Virginia',        topScore:79,  botScore:72, spread:-1.0, round:1, region:'Midwest', gameDate:'2026-03-22T23:10:00Z'},
   {top:'Kentucky',     bot:'Iowa St.',        topScore:63,  botScore:82, spread:-5.0, round:1, region:'Midwest', gameDate:'2026-03-22T19:45:00Z'},
+  // ─── SWEET 16 RESULTS ───────────────────────────────────────────────────
+  // West (Mar 26)
+  {top:'Purdue',     bot:'Texas',       topScore:79,  botScore:77, spread:7.5,  round:2, region:'West',   gameDate:'2026-03-26T23:10:00Z'},
+  {top:'Arizona',    bot:'Arkansas',    topScore:109, botScore:88, spread:8.5,  round:2, region:'West',   gameDate:'2026-03-27T01:45:00Z'},
+  // South (Mar 26-27)
+  {top:'Nebraska',   bot:'Iowa',        topScore:71,  botScore:77, spread:2.5,  round:2, region:'South',  gameDate:'2026-03-27T00:30:00Z'},
+  {top:'Houston',    bot:'Illinois',    topScore:55,  botScore:65, spread:2.5,  round:2, region:'South',  gameDate:'2026-03-27T03:05:00Z'},
+  // East (Mar 27)
+  {top:'Duke',       bot:"St. John's",  topScore:80,  botScore:75, spread:6.5,  round:2, region:'East',   gameDate:'2026-03-27T23:10:00Z'},
+  {top:'UConn',      bot:'Michigan St.',topScore:67,  botScore:63, spread:1.5,  round:2, region:'East',   gameDate:'2026-03-28T01:45:00Z'},
+  // Midwest (Mar 27)
+  {top:'Michigan',   bot:'Alabama',     topScore:90,  botScore:77, spread:10.5, round:2, region:'Midwest',gameDate:'2026-03-27T23:35:00Z'},
+  {top:'Iowa St.',   bot:'Tennessee',   topScore:62,  botScore:76, spread:4.5,  round:2, region:'Midwest',gameDate:'2026-03-28T02:10:00Z'},
 ];
 
 // ─── BUILD MATCHUP OBJECTS FROM KNOWN RESULTS + FULL BRACKET PLACEHOLDERS ────
@@ -1071,6 +1084,7 @@ function deriveSlots(matchups) {
               if (!m.gameDate) m.gameDate = s16.gameDate;
             }
           }
+
         }
       } else {
         // No real data — derive slots from previous round results
@@ -1084,20 +1098,18 @@ function deriveSlots(matchups) {
             const s16 = SWEET16_DATA.find(d => d.region === region &&
               knownTeams.some(t => d.top === t || d.bot === t));
             if (s16) {
-              // Determine spread sign based on which team we know
-              // s16.spread > 0 means s16.top is favored
-              // We need: spread > 0 = slot.topTeam favored
               let spread = s16.spread;
               if (slot.topTeam === s16.top || slot.botTeam === s16.bot) {
-                spread = s16.spread; // same orientation
+                spread = s16.spread;
               } else if (slot.topTeam === s16.bot || slot.botTeam === s16.top) {
-                spread = -s16.spread; // flipped
+                spread = -s16.spread;
               }
               slot.spread = spread;
               slot.gameDate = s16.gameDate;
               slot.isPending = true;
             }
           }
+
           matchups.push(slot);
         }
       }
@@ -2436,6 +2448,7 @@ async function fetchAndRender(manual=false) {
           e8slot.topTeam  = adA ? adA.team  : 'TBD'; e8slot.topOwner = adA ? adA.owner : null; e8slot.topSeed = adA ? adA.seed : null;
           e8slot.botTeam  = adB ? adB.team  : 'TBD'; e8slot.botOwner = adB ? adB.owner : null; e8slot.botSeed = adB ? adB.seed : null;
           e8slot.isTBD = !adA && !adB;
+
         }
       }
 
@@ -2467,6 +2480,18 @@ async function fetchAndRender(manual=false) {
     })();
 
 
+    // Backfill spread + gameDate into derived slots from liveData now that teams are known
+    for (const slot of MATCHUPS.filter(m => m.isDerived && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === slot.topTeam && l.botTeam === slot.botTeam) ||
+        (l.topTeam === slot.botTeam && l.botTeam === slot.topTeam)
+      );
+      if (live) {
+        if (slot.spread === null && live.spread !== null) slot.spread = live.spread;
+        if (!slot.gameDate && live.gameDate) slot.gameDate = live.gameDate;
+      }
+    }
+
     // Update Losers' Bracket with live scores/status from liveData
     // Merge live game data into LOSER_MATCHUPS Sweet 16 entries by team names
     LOSER_MATCHUPS = buildLoserMatchups(); // rebuild from scratch
@@ -2490,6 +2515,17 @@ async function fetchAndRender(manual=false) {
     }
     // Re-derive Elite 8+ with updated scores
     LOSER_MATCHUPS = deriveLoserSlots(LOSER_MATCHUPS.filter(m=>m.round===2));
+    // Backfill spread + gameDate into derived Loser slots from liveData
+    for (const lm of LOSER_MATCHUPS.filter(m => m.isDerived && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === lm.topTeam && l.botTeam === lm.botTeam) ||
+        (l.topTeam === lm.botTeam && l.botTeam === lm.topTeam)
+      );
+      if (live) {
+        if (lm.spread === null && live.spread !== null) lm.spread = live.spread;
+        if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
+      }
+    }
     const liveGames = MATCHUPS.filter(m=>m.isLive);
     usingLive = true;
     const liveCount = liveGames.length;
@@ -2744,7 +2780,10 @@ window.addEventListener('resize', setHeaderHeight);
 // 1. Immediately render from known data (bracket is never empty)
 setStatus('','Loading live data from ESPN…');
 const _fab = document.getElementById('early-rounds-fab');
-if (_fab) _fab.textContent = earlyRoundsCollapsed ? '◀ Show Early Rounds' : '▶ Hide Early Rounds';
+if (_fab) {
+  _fab.textContent = earlyRoundsCollapsed ? '◀ Show Early Rounds' : '▶ Hide Early Rounds';
+  _fab.style.display = 'block';
+}
 renderBracket(null);
 hideLoadingScreen();
 

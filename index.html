@@ -1305,17 +1305,31 @@ function _parseEvent(ev) {
     rawWinner = topScore > botScore ? 'top' : 'bot';
   }
 
-  // Spread: only parse pre-game, never overwrite once live/final
+  // Spread: parse from odds when available; cache so it survives game going live/final
   let spread = null;
   const isScheduled = !isLive && !isFinal;
   const odds = (comp.odds||[])[0];
-  if (isScheduled && odds?.details) {
+  if (odds?.details) {
     const om = odds.details.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
     if (om) {
       const favNorm = norm(om[1].trim());
       const amt = Math.abs(parseFloat(om[2]));
       spread = favNorm === topName ? amt : favNorm === botName ? -amt : amt;
     }
+  }
+  // Cache spread when we have it; reuse cache when odds disappear (live/final)
+  const cacheKey = [topName, botName].sort().join('|');
+  if (spread !== null) {
+    spreadCache[cacheKey] = spread;
+    saveSpreadCache();
+  } else if (spreadCache[cacheKey] !== undefined) {
+    const cached = spreadCache[cacheKey];
+    const [cA] = cacheKey.split('|');
+    spread = cA === topName ? cached : -cached;
+  } else if (ELITE8_SPREADS[cacheKey] !== undefined) {
+    const raw = ELITE8_SPREADS[cacheKey];
+    const [cA] = cacheKey.split('|');
+    spread = cA === topName ? raw : -raw;
   }
 
   const notes = ev.notes||[];
@@ -1481,7 +1495,24 @@ function spreadLabel(m) {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
-let MATCHUPS = deriveSlots(buildFromKnown()); // start with known data immediately
+let MATCHUPS = deriveSlots(buildFromKnown()); // start with known data immediate
+// Spread cache: persists across fetches AND page reloads via localStorage
+// Populated when a game is scheduled (odds available); reused when live/final
+
+// Elite 8 spreads — pre-game lines, used as fallback when ESPN odds unavailable
+const ELITE8_SPREADS = {
+  'Illinois|Iowa': 7.5,      // Illinois -7.5
+  'Arizona|Purdue': 6.5,     // Arizona -6.5
+  'Michigan|Tennessee': 7.5, // Michigan -7.5
+  'Duke|UConn': 5.5,         // Duke -5.5
+};
+
+const spreadCache = (() => {
+  try { return JSON.parse(localStorage.getItem('spreadCache') || '{}'); } catch(e) { return {}; }
+})();
+function saveSpreadCache() {
+  try { localStorage.setItem('spreadCache', JSON.stringify(spreadCache)); } catch(e) {}
+}
 let usingLive = false;
 let earlyRoundsCollapsed = localStorage.getItem('earlyRoundsCollapsed') === 'true';
 function toggleEarlyRounds() {
@@ -2490,15 +2521,25 @@ async function fetchAndRender(manual=false) {
     })();
 
 
-    // Backfill spread + gameDate into derived slots from liveData now that teams are known
+    // Backfill spread + gameDate + live scores into derived slots from liveData now that teams are known
     for (const slot of MATCHUPS.filter(m => m.isDerived && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
       const live = liveData.find(l =>
         (l.topTeam === slot.topTeam && l.botTeam === slot.botTeam) ||
         (l.topTeam === slot.botTeam && l.botTeam === slot.topTeam)
       );
       if (live) {
-        if (slot.spread === null && live.spread !== null) slot.spread = live.spread;
+        const flipped = live.topTeam === slot.botTeam;
+        if (slot.spread === null && live.spread !== null) slot.spread = flipped ? -live.spread : live.spread;
         if (!slot.gameDate && live.gameDate) slot.gameDate = live.gameDate;
+        slot.isFinal   = live.isFinal;
+        slot.isLive    = live.isLive;
+        slot.isPending = live.isFinal ? false : live.isLive ? false : true;
+        slot.topScore  = flipped ? live.botScore : live.topScore;
+        slot.botScore  = flipped ? live.topScore : live.botScore;
+        slot.rawWinner = live.rawWinner === null ? null
+          : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+        slot.clock  = live.clock;
+        slot.period = live.period;
       }
     }
 
@@ -2525,15 +2566,25 @@ async function fetchAndRender(manual=false) {
     }
     // Re-derive Elite 8+ with updated scores
     LOSER_MATCHUPS = deriveLoserSlots(LOSER_MATCHUPS.filter(m=>m.round===2));
-    // Backfill spread + gameDate into derived Loser slots from liveData
+    // Backfill spread + gameDate + live scores into derived Loser slots from liveData
     for (const lm of LOSER_MATCHUPS.filter(m => m.isDerived && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
       const live = liveData.find(l =>
         (l.topTeam === lm.topTeam && l.botTeam === lm.botTeam) ||
         (l.topTeam === lm.botTeam && l.botTeam === lm.topTeam)
       );
       if (live) {
-        if (lm.spread === null && live.spread !== null) lm.spread = live.spread;
+        const flipped = live.topTeam === lm.botTeam;
+        if (lm.spread === null && live.spread !== null) lm.spread = flipped ? -live.spread : live.spread;
         if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
+        lm.isFinal   = live.isFinal;
+        lm.isLive    = live.isLive;
+        lm.isPending = live.isFinal ? false : live.isLive ? false : true;
+        lm.topScore  = flipped ? live.botScore : live.topScore;
+        lm.botScore  = flipped ? live.topScore : live.botScore;
+        lm.rawWinner = live.rawWinner === null ? null
+          : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+        lm.clock = live.clock;
+        lm.period = live.period;
       }
     }
     const liveGames = MATCHUPS.filter(m=>m.isLive);

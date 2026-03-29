@@ -1129,7 +1129,6 @@ function deriveSlots(matchups) {
        (s.topTeam === espn.botTeam && s.botTeam === espn.topTeam)));
     if (slot) {
       const flipped = slot.topTeam === espn.botTeam;
-      if (slot.spread === null && espn.spread !== null) slot.spread = espn.spread;
       if (!slot.gameDate && espn.gameDate) slot.gameDate = espn.gameDate;
       if (!slot.isFinal && !slot.isLive && (espn.isFinal || espn.isLive || espn.isPending)) {
         slot.isFinal   = espn.isFinal;
@@ -1237,10 +1236,10 @@ function roundFromNotes(notes, dateStr) {
   // Infer from date — extend ranges by 1 day to cover late games that tip past midnight UTC
   if (dateStr) {
     const d = parseInt(dateStr.replace(/-/g,''));
-    if (d>=20260319&&d<=20260321) return 0;
-    if (d>=20260321&&d<=20260323) return 1;
-    if (d>=20260326&&d<=20260328) return 2;
-    if (d>=20260328&&d<=20260330) return 3;
+    if (d>=20260319&&d<=20260320) return 0;
+    if (d>=20260321&&d<=20260322) return 1;
+    if (d>=20260326&&d<=20260327) return 2;
+    if (d>=20260328&&d<=20260329) return 3;
     if (d>=20260404&&d<=20260405) return 4;
     if (d>=20260406&&d<=20260407) return 5;
   }
@@ -1446,9 +1445,9 @@ function mergeMatchups(known, live) {
     if (knownKeys.has(key) || knownKeys.has(keyR)) continue; // already merged above
 
     if (m.round > maxKnownRound) {
-      // Future round — allow through for spread/time/score data,
-      // but null out owners so deriveSlots can set them correctly
-      merged.push({ ...m, topOwner: null, botOwner: null });
+      // Future round — allow through for time/score data,
+      // but null out owners AND spread so deriveSlots/backfill can set them correctly
+      merged.push({ ...m, topOwner: null, botOwner: null, spread: null });
     } else if (!coveredRegionRound.has(`${m.region}|${m.round}`)) {
       // Current round, region not covered by known data
       merged.push({
@@ -2529,7 +2528,14 @@ async function fetchAndRender(manual=false) {
       );
       if (live) {
         const flipped = live.topTeam === slot.botTeam;
-        if (slot.spread === null && live.spread !== null) slot.spread = flipped ? -live.spread : live.spread;
+        // Always apply ELITE8_SPREADS for Elite 8 slots — authoritative and orientation-aware
+        const cacheKey = [slot.topTeam, slot.botTeam].sort().join('|');
+        const [cA] = cacheKey.split('|');
+        if (ELITE8_SPREADS[cacheKey] !== undefined) {
+          slot.spread = cA === slot.topTeam ? ELITE8_SPREADS[cacheKey] : -ELITE8_SPREADS[cacheKey];
+            } else if (slot.spread === null && live.spread !== null) {
+          slot.spread = flipped ? -live.spread : live.spread;
+        }
         if (!slot.gameDate && live.gameDate) slot.gameDate = live.gameDate;
         slot.isFinal   = live.isFinal;
         slot.isLive    = live.isLive;
@@ -2574,7 +2580,15 @@ async function fetchAndRender(manual=false) {
       );
       if (live) {
         const flipped = live.topTeam === lm.botTeam;
-        if (lm.spread === null && live.spread !== null) lm.spread = flipped ? -live.spread : live.spread;
+        if (lm.spread === null) {
+          const cacheKey = [lm.topTeam, lm.botTeam].sort().join('|');
+          const [cA] = cacheKey.split('|');
+          if (ELITE8_SPREADS[cacheKey] !== undefined) {
+            lm.spread = cA === lm.topTeam ? ELITE8_SPREADS[cacheKey] : -ELITE8_SPREADS[cacheKey];
+          } else if (live.spread !== null) {
+            lm.spread = flipped ? -live.spread : live.spread;
+          }
+        }
         if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
         lm.isFinal   = live.isFinal;
         lm.isLive    = live.isLive;

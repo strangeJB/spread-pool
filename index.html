@@ -1321,7 +1321,20 @@ function _parseEvent(ev) {
   let spread = null;
   const isScheduled = !isLive && !isFinal;
   const odds = (comp.odds||[])[0];
-  if (odds?.details) {
+  if (odds?.pointSpread) {
+    // Primary: pointSpread.home.open.line e.g. "+2.5" = home team is +2.5 underdog
+    const homeLine = parseFloat(odds.pointSpread?.home?.close?.line ?? odds.pointSpread?.home?.current?.line);
+    if (!isNaN(homeLine)) {
+      const homeComp = comp.competitors?.find(c => c.homeAway === 'home');
+      const homeName = homeComp ? norm(homeComp.team?.shortDisplayName || homeComp.team?.displayName || '') : null;
+      if (homeName) {
+        // home +2.5 (underdog): if home=top → spread=-2.5; if home=bot → spread=+2.5
+        spread = homeName === topName ? -homeLine : homeLine;
+      }
+    }
+  }
+  if (spread === null && odds?.details) {
+    // Fallback: "TeamName -3.5" string format — team name is the favorite
     const om = odds.details.match(/^(.+?)\s+([+-]?\d+\.?\d*)$/);
     if (om) {
       const favNorm = norm(om[1].trim());
@@ -2550,19 +2563,55 @@ async function fetchAndRender(manual=false) {
       }
 
       // Final Four from Elite 8
-      const ffPairs = [['East','West'],['South','Midwest']];
+      // First, collect all 4 E8 winners
+      const e8Winners = {};
+      for (const region of ['East','South','West','Midwest']) {
+        const m = MATCHUPS.find(x => x.isDerived && x.round===3 && x.region===region);
+        const ad = advWinner(m);
+        if (ad) e8Winners[region] = ad;
+      }
+      // Try to use ESPN's actual FF matchup entries to determine correct pairings
+      // ESPN round=4 entries in MATCHUPS (non-derived, null owners) reflect actual bracket draw
+      const espnFF = liveData.filter(m => m.round===4)
+        .sort((a,b) => (a.gameDate||'') < (b.gameDate||'') ? -1 : 1);
       const ffSlots = MATCHUPS.filter(m => m.isDerived && m.round===4)
         .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
-      ffPairs.forEach(([rA, rB], i) => {
-        const slot = ffSlots[i];
-        if (!slot) return;
-        const mA = MATCHUPS.find(m => m.isDerived && m.round===3 && m.region===rA);
-        const mB = MATCHUPS.find(m => m.isDerived && m.round===3 && m.region===rB);
-        const adA = advWinner(mA), adB = advWinner(mB);
-        slot.topTeam  = adA ? adA.team  : 'TBD'; slot.topOwner = adA ? adA.owner : null; slot.topSeed = adA ? adA.seed : null;
-        slot.botTeam  = adB ? adB.team  : 'TBD'; slot.botOwner = adB ? adB.owner : null; slot.botSeed = adB ? adB.seed : null;
-        slot.isTBD = !adA && !adB;
-      });
+      // Build lookup: team -> e8Winner entry
+      const winnerByTeam = {};
+      for (const [, ad] of Object.entries(e8Winners)) winnerByTeam[ad.team] = ad;
+
+      if (espnFF.length >= 2) {
+        // Use ESPN's pairings directly
+        espnFF.forEach((espnGame, i) => {
+          const slot = ffSlots[i];
+          if (!slot) return;
+          const adA = winnerByTeam[espnGame.topTeam] || winnerByTeam[espnGame.botTeam] && null;
+          const adB = winnerByTeam[espnGame.botTeam] || null;
+          // adA = winner riding espnGame.topTeam, adB = winner riding espnGame.botTeam
+          const wA = winnerByTeam[espnGame.topTeam];
+          const wB = winnerByTeam[espnGame.botTeam];
+          slot.topTeam  = wA ? wA.team  : (espnGame.topTeam  !== 'TBD' ? espnGame.topTeam  : 'TBD');
+          slot.topOwner = wA ? wA.owner : null;
+          slot.topSeed  = wA ? wA.seed  : null;
+          slot.botTeam  = wB ? wB.team  : (espnGame.botTeam  !== 'TBD' ? espnGame.botTeam  : 'TBD');
+          slot.botOwner = wB ? wB.owner : null;
+          slot.botSeed  = wB ? wB.seed  : null;
+          slot.isTBD = !wA && !wB;
+          if (espnGame.gameDate) slot.gameDate = espnGame.gameDate;
+          if (espnGame.spread !== null && slot.spread === null) slot.spread = espnGame.spread;
+        });
+      } else {
+        // Fall back to assumed region pairings if ESPN hasn't posted FF games yet
+        const ffPairs = [['East','West'],['South','Midwest']];
+        ffPairs.forEach(([rA, rB], i) => {
+          const slot = ffSlots[i];
+          if (!slot) return;
+          const adA = e8Winners[rA], adB = e8Winners[rB];
+          slot.topTeam  = adA ? adA.team  : 'TBD'; slot.topOwner = adA ? adA.owner : null; slot.topSeed = adA ? adA.seed : null;
+          slot.botTeam  = adB ? adB.team  : 'TBD'; slot.botOwner = adB ? adB.owner : null; slot.botSeed = adB ? adB.seed : null;
+          slot.isTBD = !adA && !adB;
+        });
+      }
 
       // Championship from Final Four
       const champ = MATCHUPS.find(m => m.isDerived && m.round===5);
@@ -2575,6 +2624,30 @@ async function fetchAndRender(manual=false) {
         champ.isTBD = !adA && !adB;
       }
     })();
+
+    // Backfill spread + gameDate into FF/Championship slots now that repropagateOwners has set their teams
+    for (const slot of MATCHUPS.filter(m => m.isDerived && m.round >= 4 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === slot.topTeam && l.botTeam === slot.botTeam) ||
+        (l.topTeam === slot.botTeam && l.botTeam === slot.topTeam)
+      );
+      if (live) {
+        const flipped = live.topTeam === slot.botTeam;
+        if (slot.spread === null && live.spread !== null) slot.spread = flipped ? -live.spread : live.spread;
+        if (!slot.gameDate && live.gameDate) slot.gameDate = live.gameDate;
+        if (!slot.isFinal && !slot.isLive) {
+          slot.isFinal = live.isFinal;
+          slot.isLive = live.isLive;
+          slot.isPending = !live.isFinal && !live.isLive;
+          if (live.isFinal || live.isLive) {
+            slot.topScore = flipped ? live.botScore : live.topScore;
+            slot.botScore = flipped ? live.topScore : live.botScore;
+            slot.rawWinner = live.rawWinner === null ? null
+              : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+          }
+        }
+      }
+    }
 
     // Update Losers' Bracket with live scores/status from liveData
     // Merge live game data into LOSER_MATCHUPS Sweet 16 entries by team names
@@ -2645,19 +2718,44 @@ async function fetchAndRender(manual=false) {
       }
       // FF slot 0: East+West E8 winners
       // FF slot 1: South+Midwest E8 winners
-      const ffPairs = [['East','West'],['South','Midwest']];
+      const loserE8Winners = {};
+      for (const region of ['East','South','West','Midwest']) {
+        const m = LOSER_MATCHUPS.find(x => x.round===3 && x.region===region);
+        const ad = advWinner(m);
+        if (ad) loserE8Winners[region] = ad;
+      }
+      const espnFFl = liveData.filter(m => m.round===4)
+        .sort((a,b) => (a.gameDate||'') < (b.gameDate||'') ? -1 : 1);
       const ffSlots = LOSER_MATCHUPS.filter(m => m.isDerived && m.round===4)
         .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
-      ffPairs.forEach(([rA, rB], i) => {
-        const slot = ffSlots[i];
-        if (!slot) return;
-        const mA = LOSER_MATCHUPS.find(m => m.round===3 && m.region===rA);
-        const mB = LOSER_MATCHUPS.find(m => m.round===3 && m.region===rB);
-        const adA = advWinner(mA), adB = advWinner(mB);
-        slot.topTeam  = adA ? adA.team  : 'TBD'; slot.topOwner = adA ? adA.owner : null; slot.topSeed = adA ? adA.seed : null;
-        slot.botTeam  = adB ? adB.team  : 'TBD'; slot.botOwner = adB ? adB.owner : null; slot.botSeed = adB ? adB.seed : null;
-        slot.isTBD = !adA && !adB;
-      });
+      const loserWinnerByTeam = {};
+      for (const [, ad] of Object.entries(loserE8Winners)) loserWinnerByTeam[ad.team] = ad;
+
+      if (espnFFl.length >= 2) {
+        espnFFl.forEach((espnGame, i) => {
+          const slot = ffSlots[i];
+          if (!slot) return;
+          const wA = loserWinnerByTeam[espnGame.topTeam];
+          const wB = loserWinnerByTeam[espnGame.botTeam];
+          slot.topTeam  = wA ? wA.team  : (espnGame.topTeam  !== 'TBD' ? espnGame.topTeam  : 'TBD');
+          slot.topOwner = wA ? wA.owner : null; slot.topSeed = wA ? wA.seed : null;
+          slot.botTeam  = wB ? wB.team  : (espnGame.botTeam  !== 'TBD' ? espnGame.botTeam  : 'TBD');
+          slot.botOwner = wB ? wB.owner : null; slot.botSeed = wB ? wB.seed : null;
+          slot.isTBD = !wA && !wB;
+          if (espnGame.gameDate) slot.gameDate = espnGame.gameDate;
+          if (espnGame.spread !== null && slot.spread === null) slot.spread = espnGame.spread;
+        });
+      } else {
+        const ffPairs = [['East','West'],['South','Midwest']];
+        ffPairs.forEach(([rA, rB], i) => {
+          const slot = ffSlots[i];
+          if (!slot) return;
+          const adA = loserE8Winners[rA], adB = loserE8Winners[rB];
+          slot.topTeam  = adA ? adA.team  : 'TBD'; slot.topOwner = adA ? adA.owner : null; slot.topSeed = adA ? adA.seed : null;
+          slot.botTeam  = adB ? adB.team  : 'TBD'; slot.botOwner = adB ? adB.owner : null; slot.botSeed = adB ? adB.seed : null;
+          slot.isTBD = !adA && !adB;
+        });
+      }
       // Championship from FF
       const champ = LOSER_MATCHUPS.find(m => m.isDerived && m.round===5);
       const ffs = LOSER_MATCHUPS.filter(m => m.isDerived && m.round===4)
@@ -2669,6 +2767,19 @@ async function fetchAndRender(manual=false) {
         champ.isTBD = !adA && !adB;
       }
     })();
+    // Backfill spread + gameDate into Loser FF/Championship slots
+    for (const lm of LOSER_MATCHUPS.filter(m => m.isDerived && m.round >= 4 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === lm.topTeam && l.botTeam === lm.botTeam) ||
+        (l.topTeam === lm.botTeam && l.botTeam === lm.topTeam)
+      );
+      if (live) {
+        const flipped = live.topTeam === lm.botTeam;
+        if (lm.spread === null && live.spread !== null) lm.spread = flipped ? -live.spread : live.spread;
+        if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
+      }
+    }
+
     const liveGames = MATCHUPS.filter(m=>m.isLive);
     usingLive = true;
     const liveCount = liveGames.length;

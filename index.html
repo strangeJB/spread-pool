@@ -2613,7 +2613,48 @@ async function fetchAndRender(manual=false) {
         });
       }
 
-      // Championship from Final Four
+      // Championship derived after FF scores are applied (see post-backfill pass below)
+    })();
+
+    // Backfill spread + gameDate into FF/Championship slots now that repropagateOwners has set their teams
+    for (const slot of MATCHUPS.filter(m => m.isDerived && m.round >= 4 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === slot.topTeam && l.botTeam === slot.botTeam) ||
+        (l.topTeam === slot.botTeam && l.botTeam === slot.topTeam)
+      );
+      if (live) {
+        const flipped = live.topTeam === slot.botTeam;
+        if (slot.spread === null && live.spread !== null) slot.spread = flipped ? -live.spread : live.spread;
+        if (!slot.gameDate && live.gameDate) slot.gameDate = live.gameDate;
+        if (!slot.isFinal && !slot.isLive) {
+          slot.isFinal = live.isFinal;
+          slot.isLive = live.isLive;
+          slot.isPending = !live.isFinal && !live.isLive;
+          if (live.isFinal || live.isLive) {
+            slot.topScore = flipped ? live.botScore : live.topScore;
+            slot.botScore = flipped ? live.topScore : live.botScore;
+            slot.rawWinner = live.rawWinner === null ? null
+              : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+          }
+        }
+      }
+    }
+
+    // Derive Championship teams now that FF slots have final scores applied
+    (function deriveChampionship() {
+      function advWinner(m) {
+        if (!m || !m.isFinal || m.rawWinner === null) return null;
+        const margin = (m.topScore??0) - (m.botScore??0);
+        let sw;
+        if (m.spread === null) sw = m.rawWinner;
+        else if (m.spread > 0) sw = margin > m.spread ? 'top' : 'bot';
+        else sw = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+        return {
+          team:  m.rawWinner==='top' ? m.topTeam  : m.botTeam,
+          owner: sw==='top'          ? m.topOwner : m.botOwner,
+          seed:  m.rawWinner==='top' ? m.topSeed  : m.botSeed,
+        };
+      }
       const champ = MATCHUPS.find(m => m.isDerived && m.round===5);
       const ffs = MATCHUPS.filter(m => m.isDerived && m.round===4)
         .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
@@ -2625,8 +2666,8 @@ async function fetchAndRender(manual=false) {
       }
     })();
 
-    // Backfill spread + gameDate into FF/Championship slots now that repropagateOwners has set their teams
-    for (const slot of MATCHUPS.filter(m => m.isDerived && m.round >= 4 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+    // Backfill spread + gameDate into Championship slot now that finalists are known
+    for (const slot of MATCHUPS.filter(m => m.isDerived && m.round===5 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
       const live = liveData.find(l =>
         (l.topTeam === slot.topTeam && l.botTeam === slot.botTeam) ||
         (l.topTeam === slot.botTeam && l.botTeam === slot.topTeam)
@@ -2756,16 +2797,7 @@ async function fetchAndRender(manual=false) {
           slot.isTBD = !adA && !adB;
         });
       }
-      // Championship from FF
-      const champ = LOSER_MATCHUPS.find(m => m.isDerived && m.round===5);
-      const ffs = LOSER_MATCHUPS.filter(m => m.isDerived && m.round===4)
-        .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
-      if (champ && ffs.length >= 2) {
-        const adA = advWinner(ffs[0]), adB = advWinner(ffs[1]);
-        champ.topTeam  = adA ? adA.team  : 'TBD'; champ.topOwner = adA ? adA.owner : null; champ.topSeed = adA ? adA.seed : null;
-        champ.botTeam  = adB ? adB.team  : 'TBD'; champ.botOwner = adB ? adB.owner : null; champ.botSeed = adB ? adB.seed : null;
-        champ.isTBD = !adA && !adB;
-      }
+      // Championship derived after FF scores are applied (see post-backfill pass below)
     })();
     // Backfill spread + gameDate into Loser FF/Championship slots
     for (const lm of LOSER_MATCHUPS.filter(m => m.isDerived && m.round >= 4 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
@@ -2777,6 +2809,67 @@ async function fetchAndRender(manual=false) {
         const flipped = live.topTeam === lm.botTeam;
         if (lm.spread === null && live.spread !== null) lm.spread = flipped ? -live.spread : live.spread;
         if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
+        lm.isFinal   = live.isFinal;
+        lm.isLive    = live.isLive;
+        lm.isPending = !live.isFinal && !live.isLive;
+        if (live.isFinal || live.isLive) {
+          lm.topScore  = flipped ? live.botScore : live.topScore;
+          lm.botScore  = flipped ? live.topScore : live.botScore;
+          lm.rawWinner = live.rawWinner === null ? null
+            : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+          lm.clock  = live.clock;
+          lm.period = live.period;
+        }
+      }
+    }
+
+    // Derive Loser Championship teams now that FF slots have final scores applied
+    (function deriveLoserChampionship() {
+      function advWinner(m) {
+        if (!m || !m.isFinal || m.rawWinner === null) return null;
+        const margin = (m.topScore??0) - (m.botScore??0);
+        let sw;
+        if (m.spread === null) sw = m.rawWinner;
+        else if (m.spread > 0) sw = margin > m.spread ? 'top' : 'bot';
+        else sw = -margin > Math.abs(m.spread) ? 'bot' : 'top';
+        return {
+          team:  m.rawWinner==='top' ? m.topTeam  : m.botTeam,
+          owner: sw==='top'          ? m.topOwner : m.botOwner,
+          seed:  m.rawWinner==='top' ? m.topSeed  : m.botSeed,
+        };
+      }
+      const champ = LOSER_MATCHUPS.find(m => m.isDerived && m.round===5);
+      const ffs = LOSER_MATCHUPS.filter(m => m.isDerived && m.round===4)
+        .sort((a,b) => (a.bracketPos??9999)-(b.bracketPos??9999));
+      if (champ && ffs.length >= 2) {
+        const adA = advWinner(ffs[0]), adB = advWinner(ffs[1]);
+        champ.topTeam  = adA ? adA.team  : 'TBD'; champ.topOwner = adA ? adA.owner : null; champ.topSeed = adA ? adA.seed : null;
+        champ.botTeam  = adB ? adB.team  : 'TBD'; champ.botOwner = adB ? adB.owner : null; champ.botSeed = adB ? adB.seed : null;
+        champ.isTBD = !adA && !adB;
+      }
+    })();
+
+    // Backfill spread + gameDate into Loser Championship slot now that finalists are known
+    for (const lm of LOSER_MATCHUPS.filter(m => m.isDerived && m.round===5 && m.topTeam !== 'TBD' && m.botTeam !== 'TBD')) {
+      const live = liveData.find(l =>
+        (l.topTeam === lm.topTeam && l.botTeam === lm.botTeam) ||
+        (l.topTeam === lm.botTeam && l.botTeam === lm.topTeam)
+      );
+      if (live) {
+        const flipped = live.topTeam === lm.botTeam;
+        if (lm.spread === null && live.spread !== null) lm.spread = flipped ? -live.spread : live.spread;
+        if (!lm.gameDate && live.gameDate) lm.gameDate = live.gameDate;
+        if (!lm.isFinal && !lm.isLive) {
+          lm.isFinal = live.isFinal;
+          lm.isLive = live.isLive;
+          lm.isPending = !live.isFinal && !live.isLive;
+          if (live.isFinal || live.isLive) {
+            lm.topScore = flipped ? live.botScore : live.topScore;
+            lm.botScore = flipped ? live.topScore : live.botScore;
+            lm.rawWinner = live.rawWinner === null ? null
+              : flipped ? (live.rawWinner==='top'?'bot':'top') : live.rawWinner;
+          }
+        }
       }
     }
 

@@ -1526,6 +1526,16 @@ let MATCHUPS = deriveSlots(buildFromKnown()); // start with known data immediate
 
 // Elite 8 spreads — pre-game lines, used as fallback when ESPN odds unavailable
 // E8 results — used to correct ESPN API data errors (wrong scores/winner)
+// Completed Final Four results — same purpose as E8_RESULTS
+const FF_RESULTS = {
+  'UConn|Illinois':  {winner:'UConn',    winScore:71, loseScore:62},  // UConn 71, Illinois 62
+  'Michigan|Arizona':{winner:'Michigan', winScore:91, loseScore:73},  // Michigan 91, Arizona 73
+};
+
+// Championship spread — Michigan -6.5 vs UConn
+// cacheKey='Michigan|UConn', cA='Michigan', Michigan is favored -> +6.5
+const CHAMP_SPREAD = {'Michigan|UConn': 6.5};
+
 const E8_RESULTS = {
   'South': {winner:'Illinois', winScore:71, loseScore:59},
   'West':  {winner:'Arizona',  winScore:79, loseScore:64},
@@ -2638,6 +2648,17 @@ async function fetchAndRender(manual=false) {
           }
         }
       }
+      // Override with known FF results to correct any ESPN data corruption
+      if (slot.isFinal && slot.round===4) {
+        const ffKey = [slot.topTeam, slot.botTeam].sort().join('|');
+        const ffR = FF_RESULTS[ffKey];
+        if (ffR) {
+          const winIsTop = slot.topTeam === ffR.winner;
+          slot.rawWinner = winIsTop ? 'top' : 'bot';
+          slot.topScore = winIsTop ? ffR.winScore : ffR.loseScore;
+          slot.botScore = winIsTop ? ffR.loseScore : ffR.winScore;
+        }
+      }
     }
 
     // Derive Championship teams now that FF slots have final scores applied
@@ -2663,6 +2684,13 @@ async function fetchAndRender(manual=false) {
         champ.topTeam  = adA ? adA.team  : 'TBD'; champ.topOwner = adA ? adA.owner : null; champ.topSeed = adA ? adA.seed : null;
         champ.botTeam  = adB ? adB.team  : 'TBD'; champ.botOwner = adB ? adB.owner : null; champ.botSeed = adB ? adB.seed : null;
         champ.isTBD = !adA && !adB;
+        // Apply CHAMP_SPREAD if not yet set
+        if (champ.spread === null && !champ.isTBD) {
+          const ck = [champ.topTeam, champ.botTeam].sort().join('|');
+          const [cA] = ck.split('|');
+          if (CHAMP_SPREAD[ck] !== undefined)
+            champ.spread = cA === champ.topTeam ? CHAMP_SPREAD[ck] : -CHAMP_SPREAD[ck];
+        }
       }
     })();
 
@@ -2821,6 +2849,17 @@ async function fetchAndRender(manual=false) {
           lm.period = live.period;
         }
       }
+      // Override with known FF results to correct any ESPN data corruption
+      if (lm.isFinal && lm.round===4) {
+        const ffKey = [lm.topTeam, lm.botTeam].sort().join('|');
+        const ffR = FF_RESULTS[ffKey];
+        if (ffR) {
+          const winIsTop = lm.topTeam === ffR.winner;
+          lm.rawWinner = winIsTop ? 'top' : 'bot';
+          lm.topScore = winIsTop ? ffR.winScore : ffR.loseScore;
+          lm.botScore = winIsTop ? ffR.loseScore : ffR.winScore;
+        }
+      }
     }
 
     // Derive Loser Championship teams now that FF slots have final scores applied
@@ -2846,6 +2885,12 @@ async function fetchAndRender(manual=false) {
         champ.topTeam  = adA ? adA.team  : 'TBD'; champ.topOwner = adA ? adA.owner : null; champ.topSeed = adA ? adA.seed : null;
         champ.botTeam  = adB ? adB.team  : 'TBD'; champ.botOwner = adB ? adB.owner : null; champ.botSeed = adB ? adB.seed : null;
         champ.isTBD = !adA && !adB;
+        if (champ.spread === null && !champ.isTBD) {
+          const ck = [champ.topTeam, champ.botTeam].sort().join('|');
+          const [cA] = ck.split('|');
+          if (CHAMP_SPREAD[ck] !== undefined)
+            champ.spread = cA === champ.topTeam ? CHAMP_SPREAD[ck] : -CHAMP_SPREAD[ck];
+        }
       }
     })();
 
